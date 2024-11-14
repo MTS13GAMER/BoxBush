@@ -160,3 +160,11 @@ end)
 
   	end    
 })
+
+Tab:AddLabel("Esse Script Foi Feito Por MTS13GAMER")
+
+Tab:AddLabel("O Script Está No Início E Não Tem Muitas Funçãos")
+
+Tab:AddLabel("Não Utilize O Script Pro Mal")
+
+OrionLib:Init()
