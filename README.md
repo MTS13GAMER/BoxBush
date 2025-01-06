@@ -13,6 +13,12 @@ local Tab2 = Window:MakeTab({
 	PremiumOnly = false
 })
 
+local Tab3 = Window:MakeTab({
+	Name = "Mad City Capítulo 1",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
 Tab:AddLabel("Esse Script Foi Feito Por MTS13GAMER")
 
 Tab:AddLabel("O Script Está No Início E Não Tem Muitas Funçãos")
