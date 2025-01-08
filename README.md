@@ -35,10 +35,14 @@ local Window = Rayfield:CreateWindow({
  })
 
  local Tab = Window:CreateTab("Inicio", 4483362458) -- Title, Image
+
+ local Section = Tab:CreateSection("Inicio")
  
  local Button = Tab:CreateButton({
-   Name = "Destroir Gui",
-   Callback = function()
+    Name = "Destroir Gui",
+    Callback = function()
       Rayfield:Destroy()
-   end,
-})
+    end,
+ })
+ 
+ Rayfield:LoadConfiguration()
