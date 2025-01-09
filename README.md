@@ -46,37 +46,12 @@ local Window = Rayfield:CreateWindow({
  })
  
  local Input = Tab:CreateInput({
-   Name = "Input Example",
+   Name = "Volocidade Set",
    CurrentValue = "",
-   PlaceholderText = "Input Placeholder",
+   PlaceholderText = "Velocidade",
    RemoveTextAfterFocusLost = false,
    Flag = "Input1",
    Callback = function(Text)
-      -- A função que ocorre quando a entrada é alterada
-      -- A variável (Text) é uma string para o valor na caixa de texto
-      
-      -- Verifica se o texto é um número e está dentro do intervalo permitido
-      local velocidade = tonumber(Text)
-      if velocidade and velocidade >= 0 and velocidade <= 900 then
-         print("Velocidade válida: " .. velocidade)
-         ConfigurarVelocidade(velocidade)
-      else
-         print("Por favor, insira um valor de velocidade entre 0 e 900.")
-      end
-   end,
-})
-
-local Input = Tab:CreateInput({
-   Name = "Input Example",
-   CurrentValue = "",
-   PlaceholderText = "Input Placeholder",
-   RemoveTextAfterFocusLost = false,
-   Flag = "Input1",
-   Callback = function(Text)
-      -- A função que ocorre quando a entrada é alterada
-      -- A variável (Text) é uma string para o valor na caixa de texto
-      
-      -- Verifica se o texto é um número e está dentro do intervalo permitido
       local velocidade = tonumber(Text)
       if velocidade and velocidade >= 0 and velocidade <= 900 then
          print("Velocidade válida: " .. velocidade)
