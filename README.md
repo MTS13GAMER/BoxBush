@@ -46,9 +46,9 @@ local Window = Rayfield:CreateWindow({
  })
  
  local Input = Tab:CreateInput({
-   Name = "Volocidade Set",
+   Name = "Altere A Sua Velocidade",
    CurrentValue = "",
-   PlaceholderText = "Velocidade",
+   PlaceholderText = "Aqui",
    RemoveTextAfterFocusLost = false,
    Flag = "Input1",
    Callback = function(Text)
@@ -62,9 +62,7 @@ local Window = Rayfield:CreateWindow({
    end,
 })
 
--- Função para configurar a velocidade do player
 function ConfigurarVelocidade(valor)
-   -- Obtém o player local
    local player = game.Players.LocalPlayer
    if player and player.Character and player.Character:FindFirstChild("Humanoid") then
       player.Character.Humanoid.WalkSpeed = valor
