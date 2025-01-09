@@ -44,15 +44,59 @@ local Window = Rayfield:CreateWindow({
       Rayfield:Destroy()
     end,
  })
-
- local Toggle = Tab:CreateToggle({
-   Name = "Toggle Example",
-   CurrentValue = false,
-   Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-   -- The function that takes place when the toggle is pressed
-   -- The variable (Value) is a boolean on whether the toggle is true or false
+ 
+ local Input = Tab:CreateInput({
+   Name = "Input Example",
+   CurrentValue = "",
+   PlaceholderText = "Input Placeholder",
+   RemoveTextAfterFocusLost = false,
+   Flag = "Input1",
+   Callback = function(Text)
+      -- A função que ocorre quando a entrada é alterada
+      -- A variável (Text) é uma string para o valor na caixa de texto
+      
+      -- Verifica se o texto é um número e está dentro do intervalo permitido
+      local velocidade = tonumber(Text)
+      if velocidade and velocidade >= 0 and velocidade <= 900 then
+         print("Velocidade válida: " .. velocidade)
+         ConfigurarVelocidade(velocidade)
+      else
+         print("Por favor, insira um valor de velocidade entre 0 e 900.")
+      end
    end,
 })
- 
+
+local Input = Tab:CreateInput({
+   Name = "Input Example",
+   CurrentValue = "",
+   PlaceholderText = "Input Placeholder",
+   RemoveTextAfterFocusLost = false,
+   Flag = "Input1",
+   Callback = function(Text)
+      -- A função que ocorre quando a entrada é alterada
+      -- A variável (Text) é uma string para o valor na caixa de texto
+      
+      -- Verifica se o texto é um número e está dentro do intervalo permitido
+      local velocidade = tonumber(Text)
+      if velocidade and velocidade >= 0 and velocidade <= 900 then
+         print("Velocidade válida: " .. velocidade)
+         ConfigurarVelocidade(velocidade)
+      else
+         print("Por favor, insira um valor de velocidade entre 0 e 900.")
+      end
+   end,
+})
+
+-- Função para configurar a velocidade do player
+function ConfigurarVelocidade(valor)
+   -- Obtém o player local
+   local player = game.Players.LocalPlayer
+   if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+      player.Character.Humanoid.WalkSpeed = valor
+      print("A velocidade do player foi configurada para: " .. valor)
+   else
+      print("Não foi possível encontrar o jogador ou o Humanoid.")
+   end
+end
+
  Rayfield:LoadConfiguration()
