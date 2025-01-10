@@ -69,16 +69,25 @@ function ConfigurarVelocidade(valor)
    end
 end
 
-local Slider = Tab:CreateSlider({
-    Name = "Slider Example",
-    Range = {0, 100},
-    Increment = 10,
-    Suffix = "Bananas",
-    CurrentValue = 10,
-    Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+local Dropdown = Tab:CreateDropdown({
+    Name = "Dropdown Example",
+    Options = {"Option 1","Option 2"},
+    CurrentOption = {"Option 1"},
+    MultipleOptions = false,
+    Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Callback = function(Options)
+    -- The function that takes place when the selected option is changed
+    -- The variable (Options) is a table of strings for the current selected options
+    end,
+ })
+
+ local Toggle = Tab:CreateToggle({
+    Name = "Toggle Example",
+    CurrentValue = false,
+    Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Value)
-    -- The function that takes place when the slider changes
-    -- The variable (Value) is a number which correlates to the value the slider is currently at
+    -- The function that takes place when the toggle is pressed
+    -- The variable (Value) is a boolean on whether the toggle is true or false
     end,
  })
 
