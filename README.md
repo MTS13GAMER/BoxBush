@@ -789,6 +789,36 @@ local Button = Tab2:CreateButton({
     end,
  })
 
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
 
+local speed = 10 -- Velocidade do movimento
+local autoMove = false -- Estado inicial do Toggle
+
+local function moveCharacter()
+    while autoMove do
+        humanoid:Move(Vector3.new(0, 0, -speed), true) -- Move para frente
+        wait(1) -- Espera um pouco
+        humanoid:Move(Vector3.new(0, 0, speed), true) -- Move para trás
+        wait(1) -- Espera um pouco
+    end
+end
+
+local Toggle = Tab2:CreateToggle({
+   Name = "Auto AFK",
+   CurrentValue = false,
+   Flag = "AutoMove",
+   Callback = function(Value)
+       autoMove = Value
+       if autoMove then
+           moveCharacter()
+       end
+   end,
+})
+
+local WarningLabel = Tab:CreateLabel("⚠️ Este Script Não foi feito Para Atrapalhar as pessoas (Use com Cuidado)", 4483362458, Color3.fromRGB(255, 165, 0), false)
+
+local CreditLabel = Tab:CreateLabel("✔️ Obrigado (Script Feito Por MTS13GAMER)", 4483362458, Color3.fromRGB(0, 255, 255), false)
 
  Rayfield:LoadConfiguration()
