@@ -77,7 +77,7 @@ local Button = Tab:CreateButton({
    end,
 })
 
-local Button = Tab:CreateButton({
+local Button = Tab2:CreateButton({
    Name = "Click Tp",
    Callback = function()
        local player = game.Players.LocalPlayer
