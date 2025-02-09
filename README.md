@@ -81,8 +81,8 @@ local Button = Tab:CreateButton({
    end,
 })
 
-local Button = Tab:CreateButton({
-   Name = "Click Para se salavr durante a noite",
+local Button = Tab3:CreateButton({
+   Name = "Click Para Se Salvar Durante A Noite",
    Callback = function()
      -- Referência ao jogador
 local player = game.Players.LocalPlayer
