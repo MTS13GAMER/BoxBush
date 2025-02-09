@@ -81,6 +81,31 @@ local Button = Tab:CreateButton({
    end,
 })
 
+
+local Button = Tab3:CreateButton({
+    Name = "Tp Pen",
+    Callback = function()
+    
+local player = game.Players.LocalPlayer
+
+local destination = Vector3.new(704, 8, 470) 
+
+player.Character:SetPrimaryPartCFrame(CFrame.new(destination))
+    end,
+ })
+
+local Button = Tab3:CreateButton({
+    Name = "Ganhar Primeiro Jogo",
+    Callback = function()
+    
+local player = game.Players.LocalPlayer
+
+local destination = Vector3.new(2257, 447, -19) 
+
+player.Character:SetPrimaryPartCFrame(CFrame.new(destination))
+    end,
+ })
+
 local Button = Tab3:CreateButton({
    Name = "Click Para Se Salvar Durante A Noite",
    Callback = function()
