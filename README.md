@@ -42,6 +42,10 @@ local Window = Rayfield:CreateWindow({
 
  local Section = Tab2:CreateSection("Universal")
 
+  local Tab3 = Window:CreateTab("Squid X", 4483362458) -- Title, Image
+
+ local Section = Tab3:CreateSection("Squid X")
+
 
  local Input = Tab2:CreateInput({
    Name = "Altere A Sua Velocidade",
@@ -74,6 +78,20 @@ local Button = Tab:CreateButton({
    Name = "Destroir Gui",
    Callback = function()
      Rayfield:Destroy()
+   end,
+})
+
+local Button = Tab:CreateButton({
+   Name = "Click Para se salavr durante a noite",
+   Callback = function()
+     -- Referência ao jogador
+local player = game.Players.LocalPlayer
+
+-- Defina as coordenadas do ponto de destino (no mundo)
+local destination = Vector3.new(341, 40, 129)  -- Substitua com as coordenadas desejadas
+
+-- Função de teleporte
+player.Character:SetPrimaryPartCFrame(CFrame.new(destination))
    end,
 })
 
