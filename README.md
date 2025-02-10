@@ -42,7 +42,7 @@ local Window = Rayfield:CreateWindow({
 
  local Section = Tab2:CreateSection("Universal")
 
-  local Tab3 = Window:CreateTab("Squid X", 4483362458) -- Title, Image
+ local Tab3 = Window:CreateTab("Squid X", 4483362458) -- Title, Image
 
  local Section = Tab3:CreateSection("Squid X")
 
