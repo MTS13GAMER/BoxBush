@@ -117,6 +117,17 @@ local Button = Tab:CreateButton({
    end,
 })
 
+local Button = Tab:CreateButton({
+   Name = "Kill Me",
+   Callback = function()
+  local player = game.Players.LocalPlayer
+
+if player.Character and player.Character:FindFirstChild("Humanoid") then
+    player.Character.Humanoid.Health = 0
+end
+   end,
+})
+
 
 local Button = Tab3:CreateButton({
     Name = "Tp Pen",
