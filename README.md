@@ -46,6 +46,28 @@ local Window = Rayfield:CreateWindow({
 
  local Section = Tab3:CreateSection("Squid X")
 
+local UserInputService = game:GetService("UserInputService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local RunService = game:GetService("RunService")
+
+local ativo = false
+
+local Toggle = Tab:CreateToggle({
+   Name = "Auto Level",
+   CurrentValue = false,
+   Flag = "autolevel",
+   Callback = function(Value)
+       ativo = Value
+   end,
+})
+
+RunService.RenderStepped:Connect(function()
+    if ativo then
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.T, false, nil)
+        wait(0.1) -- Ajuste o tempo para mudar a velocidade de repetição
+    end
+end)
+
 
  local Input = Tab2:CreateInput({
    Name = "Altere A Sua Velocidade",
