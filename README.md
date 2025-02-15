@@ -100,6 +100,16 @@ function ConfigurarVelocidade(valor)
    end
 end
 
+local Button = Tab4:CreateButton({
+   Name = "Tp Omnitrix",
+   Callback = function()
+     local player = game.Players.LocalPlayer
+if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+    player.Character.HumanoidRootPart.CFrame = CFrame.new(7834.2, -141.9, -150.1)
+end
+   end,
+})
+
 local Button = Tab:CreateButton({
    Name = "Destroir Gui",
    Callback = function()
