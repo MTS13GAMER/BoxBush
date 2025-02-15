@@ -46,13 +46,17 @@ local Window = Rayfield:CreateWindow({
 
  local Section = Tab3:CreateSection("Squid X")
 
+ local Tab4 = Window:CreateTab("Omni X", 4483362458) -- Title, Image
+
+ local Section = Tab4:CreateSection("Omni X")
+
 local UserInputService = game:GetService("UserInputService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
 
 local ativo = false
 
-local Toggle = Tab:CreateToggle({
+local Toggle = Tab4:CreateToggle({
    Name = "Auto Level",
    CurrentValue = false,
    Flag = "autolevel",
