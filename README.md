@@ -38,6 +38,10 @@ local Window = Rayfield:CreateWindow({
 
  local Section = Tab:CreateSection("Inicio")
 
+  local Tab5 = Window:CreateTab("Contrua Um Barco", 4483362458) -- Title, Image
+
+ local Section = Tab5:CreateSection("Build A Boat")
+
  local Tab2 = Window:CreateTab("Universal", 4483362458) -- Title, Image
 
  local Section = Tab2:CreateSection("Universal")
@@ -49,6 +53,23 @@ local Window = Rayfield:CreateWindow({
  local Tab4 = Window:CreateTab("Omni X", 4483362458) -- Title, Image
 
  local Section = Tab4:CreateSection("Omni X")
+
+ local Button = Tab5:CreateButton({
+   Name = "Tp Sala Portal Free",
+   Callback = function()
+       teleportPlayer() -- Chama a função ao clicar no botão
+   end,
+})
+
+local player = game.Players.LocalPlayer
+local targetPosition = Vector3.new(439.1, -32.3, 4832.7)
+
+local function teleportPlayer()
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+    end
+end
+
 
 local UserInputService = game:GetService("UserInputService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
