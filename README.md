@@ -54,22 +54,6 @@ local Window = Rayfield:CreateWindow({
 
  local Section = Tab4:CreateSection("Omni X")
 
- local Button = Tab5:CreateButton({
-   Name = "Tp Sala Portal Free",
-   Callback = function()
-       local player = game.Players.LocalPlayer
-local targetPosition = Vector3.new(439.1, -32.3, 4832.7)
-
-local function teleportPlayer()
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-    end
-end
-   end,
-})
-
-
-
 local UserInputService = game:GetService("UserInputService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
