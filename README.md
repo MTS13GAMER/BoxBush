@@ -955,4 +955,86 @@ local Toggle = Tab2:CreateToggle({
    end,
 })
 
+local player = game.Players.LocalPlayer
+local autoFarming = false
+local flySpeed = 400.90
+local flyDuration = 21
+local centerPosition = Vector3.new(0, 100, 0)
+local chestPosition = Vector3.new(15, -5, 9495)
+local totalCoins = 0
+local noclipEnabled = false
+
+local Toggle = Tab5:CreateToggle({
+   Name = "Auto Farm Gold",
+   CurrentValue = false,
+   Flag = "autofarm",
+   Callback = function(Value)
+       autoFarming = Value
+       if autoFarming then
+           startAutoFarm()
+       else
+           stopFlying()
+           teleportToTeamBase()
+           disableNoclip()
+       end
+   end,
+})
+
+function startAutoFarm()
+    spawn(function()
+        while autoFarming do
+            local character = player.Character or player.CharacterAdded:Wait()
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                enableNoclip(character)
+                hrp.CFrame = CFrame.new(centerPosition)
+                local bodyVelocity = Instance.new("BodyVelocity")
+                bodyVelocity.MaxForce = Vector3.new(10000, 10000, 10000)
+                bodyVelocity.Velocity = Vector3.new(0, 0, flySpeed)
+                bodyVelocity.Parent = hrp
+                wait(flyDuration)
+                bodyVelocity:Destroy()
+                hrp.CFrame = CFrame.new(chestPosition)
+                character:BreakJoints()
+                totalCoins = totalCoins + 100
+                wait(9)
+            end
+        end
+    end)
+end
+
+function stopFlying()
+    if bodyVelocity then
+        bodyVelocity:Destroy()
+    end
+end
+
+function teleportToTeamBase()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        local teamBasePosition = Vector3.new(0, 10, 0)
+        hrp.CFrame = CFrame.new(teamBasePosition)
+    end
+end
+
+function enableNoclip(character)
+    noclipEnabled = true
+    spawn(function()
+        while noclipEnabled do
+            for _, part in pairs(character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+            wait()
+        end
+    end)
+end
+
+function disableNoclip()
+    noclipEnabled = false
+end
+
+
  Rayfield:LoadConfiguration()
