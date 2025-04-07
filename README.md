@@ -98,6 +98,31 @@ end)
    end,
 })
 
+local noclipEnabled = false
+
+local Toggle = Tab2:CreateToggle({
+   Name = "Noclip",
+   CurrentValue = false,
+   Flag = "Noclip",
+   Callback = function(Value)
+       noclipEnabled = Value
+
+       -- Ativa/desativa o noclip
+       if noclipEnabled then
+           game:GetService("RunService").Stepped:Connect(function()
+               if noclipEnabled and game.Players.LocalPlayer.Character then
+                   for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+                       if part:IsA("BasePart") and part.CanCollide then
+                           part.CanCollide = false
+                       end
+                   end
+               end
+           end)
+       end
+   end,
+})
+
+
 function ConfigurarVelocidade(valor)
    local player = game.Players.LocalPlayer
    if player and player.Character and player.Character:FindFirstChild("Humanoid") then
