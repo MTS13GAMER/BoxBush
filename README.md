@@ -54,9 +54,9 @@ local Window = Rayfield:CreateWindow({
 
  local Section = Tab4:CreateSection("Omni X")
 
- local Tab5 = Window:CreateTab("Blue Lock", 4483362458) -- Title, Image
+ local Tab6 = Window:CreateTab("Blue Lock", 4483362458) -- Title, Image
 
- local Section = Tab5:CreateSection("Blue Lock")
+ local Section = Tab6:CreateSection("Blue Lock")
 
 local UserInputService = game:GetService("UserInputService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
@@ -118,7 +118,7 @@ end
    end,
 })
 
-local Button = Tab5:CreateButton({
+local Button = Tab6:CreateButton({
    Name = "Controlar A Bola",
    Callback = function()
      loadstring(game:HttpGet("https://raw.githubusercontent.com/RedJDark/MAIN/refs/heads/main/JDARKHUB.txt"))()
