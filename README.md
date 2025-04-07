@@ -54,6 +54,10 @@ local Window = Rayfield:CreateWindow({
 
  local Section = Tab4:CreateSection("Omni X")
 
+ local Tab5 = Window:CreateTab("Blue Lock", 4483362458) -- Title, Image
+
+ local Section = Tab5:CreateSection("Blue Lock")
+
 local UserInputService = game:GetService("UserInputService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
@@ -111,6 +115,13 @@ local Button = Tab4:CreateButton({
 if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
     player.Character.HumanoidRootPart.CFrame = CFrame.new(7834.2, -141.9, -150.1)
 end
+   end,
+})
+
+local Button = Tab5:CreateButton({
+   Name = "Controlar A Bola",
+   Callback = function()
+     loadstring(game:HttpGet("https://raw.githubusercontent.com/RedJDark/MAIN/refs/heads/main/JDARKHUB.txt"))()
    end,
 })
 
