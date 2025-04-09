@@ -3,8 +3,8 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
     Name = "BoxBuh",
     Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-    LoadingTitle = "BoxBuh",
-    LoadingSubtitle = "By MTS13GAMER",
+    LoadingTitle = "📦|BoxBuh",
+    LoadingSubtitle = "➡By MTS13GAMER⬅",
     Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
  
     DisableRayfieldPrompts = false,
@@ -30,7 +30,7 @@ local Window = Rayfield:CreateWindow({
        FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
        SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
        GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-       Key = {"Update6","0513","fa","gg"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+       Key = {"Update8","0513","fa","gg"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
     }
  })
 
@@ -182,7 +182,20 @@ player.Character:SetPrimaryPartCFrame(CFrame.new(destination))
  })
 
 local Button = Tab3:CreateButton({
-    Name = "Ganhar Primeiro Jogo",
+    Name = "Entrar No Jogo",
+    Callback = function()
+    
+local player = game.Players.LocalPlayer
+
+local destination = Vector3.new(246, 13, -468) 
+
+player.Character:SetPrimaryPartCFrame(CFrame.new(destination))
+    end,
+ })
+
+
+local Button = Tab3:CreateButton({
+    Name = "Ganhar Primeiro Jogo (Use Na Luz Verde)",
     Callback = function()
     
 local player = game.Players.LocalPlayer
@@ -1055,5 +1068,63 @@ function disableNoclip()
     noclipEnabled = false
 end
 
+local GotoPlayerName = ""
+local fastTp = false
+
+-- Input do nome
+local Input = Tab2:CreateInput({ 
+   Name = "Goto", 
+   CurrentValue = "",
+   PlaceholderText = "Nome do jogador",
+   RemoveTextAfterFocusLost = false,
+   Flag = "Input1",
+   Callback = function(Text)
+      GotoPlayerName = Text
+   end,
+})
+
+-- Função que ativa/desativa o fast teleport
+local function ToggleFastTeleport()
+	fastTp = not fastTp
+	if fastTp then
+		print("Fast Teleport Ativado")
+		task.spawn(function()
+			while fastTp do
+				task.wait()
+				local localChar = game.Players.LocalPlayer.Character
+				local targetPlr = game.Players:FindFirstChild(GotoPlayerName)
+
+				if targetPlr and targetPlr.Character and targetPlr.Character:FindFirstChild("HumanoidRootPart") then
+					localChar.HumanoidRootPart.CFrame = targetPlr.Character.HumanoidRootPart.CFrame
+				end
+			end
+		end)
+	else
+		print("Fast Teleport Desativado")
+	end
+end
+
+-- Botão de teleporte único
+Tab2:CreateButton({
+   Name = "Teleportar",
+   Callback = function()
+      local localChar = game.Players.LocalPlayer.Character
+      local targetPlr = game.Players:FindFirstChild(GotoPlayerName)
+
+      if targetPlr and targetPlr.Character and targetPlr.Character:FindFirstChild("HumanoidRootPart") then
+         localChar.HumanoidRootPart.CFrame = targetPlr.Character.HumanoidRootPart.CFrame
+      else
+         warn("Jogador não encontrado ou personagem inválido")
+      end
+   end,
+})
+
+-- Botão de Fast Teleport (Teleporte Loop)
+Tab2:CreateButton({
+   Name = "Teleporte Loop",
+   Callback = function()
+      ToggleFastTeleport() -- Simula a tecla F chamando a função diretamente
+   end,
+})
 
  Rayfield:LoadConfiguration()
