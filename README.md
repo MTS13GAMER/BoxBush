@@ -143,7 +143,7 @@ end
    end,
 })
 
-local Button = Tab6:CreateButton({
+local Button = Tab100:CreateButton({
    Name = "Controlar A Bola",
    Callback = function()
      loadstring(game:HttpGet("https://raw.githubusercontent.com/RedJDark/MAIN/refs/heads/main/JDARKHUB.txt"))()
