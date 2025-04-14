@@ -39,9 +39,9 @@ local Window = Rayfield:CreateWindow({
  local Section = Tab:CreateSection("Inicio")
 
 local Button = Tab:CreateButton({
-   Name = "O Script Esta Em Update Proxima key Update9 ",
+   Name = "O Script Esta Em Update Proxima key Update9",
    Callback = function()
-  print(0)
+  print(a)
    end,
 })
 
