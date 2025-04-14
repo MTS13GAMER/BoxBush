@@ -143,10 +143,9 @@ end
    end,
 })
 
-local Button = Tab100:CreateButton({
-   Name = "Controlar A Bola",
+local Button = Tab6:CreateButton({
+   Name = "Controlar A Bola (Isso Era Temporario Não Tem Mais)",
    Callback = function()
-     loadstring(game:HttpGet("https://raw.githubusercontent.com/RedJDark/MAIN/refs/heads/main/JDARKHUB.txt"))()
    end,
 })
 
