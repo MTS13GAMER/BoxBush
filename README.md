@@ -30,7 +30,7 @@ local Window = Rayfield:CreateWindow({
        FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
        SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
        GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-       Key = {"Update9","1013","fa","gg"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22") -->
+     Key = {"Update9","1013","fa","gg"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22") -->
     }
  })
 
@@ -148,6 +148,21 @@ local Button = Tab6:CreateButton({
    Callback = function()
    end,
 })
+
+local Button = Tab6:CreateButton({
+   Name = "Script De Estilo ",
+   Callback = function()
+   loadstring(game:HttpGet("https://raw.githubusercontent.com/PresidentZuyi/S/refs/heads/main/OfficialZuyi.txt"))()
+   end,
+})
+
+local Button = Tab6:CreateButton({
+   Name = "Script De Inf Spin ",
+   Callback = function()
+   loadstring(game:HttpGet("https://raw.githubusercontent.com/dehism/Dehism/refs/heads/main/Inf%20Spins%20Auto%20Dehism",true))()
+   end,
+})
+
 
 local Button = Tab:CreateButton({
    Name = "Destroir Gui", 
