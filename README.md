@@ -17,7 +17,7 @@ local Window = Rayfield:CreateWindow({
     },
  
     Discord = {
-       Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
+       Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
        Invite = "BZwtCDS4Vz", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
        RememberJoins = true -- Set this to false to make them join the discord every time they load it up
     },
@@ -1535,17 +1535,23 @@ local Button = Tab7:CreateButton({
     end,
  })
 
- local Button = Tab1:CreateButton({
+ local Button = Tab7:CreateButton({
     Name = "BoxBuh Brookhaven",
     Callback = function()
         loadstring(game:HttpGet("https://github.com/MTS13GAMER/Hhfhggtfdtuu/blob/main/README.md"))()
     end,
  })
 
- local Button = Tab1:CreateButton({
-    Name = "Link Do Nosso Server DO Discord :D",
+ local Button = Tab:CreateButton({
+    Name = "Link Do Nosso Server Do Discord :D",
     Callback = function()
         setclipboard("https://discord.com/invite/BZwtCDS4Vz")
- })
+        Rayfield:Notify({
+            Title = "Link do Discord Copiado!",
+            Content = "Cole No Seu Navegador Pra Entrar Se Quiser.",
+            Duration = 5,
+        })
+    end,
+})
 
  Rayfield:LoadConfiguration()
