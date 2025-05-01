@@ -12,7 +12,7 @@ local Window = Rayfield:CreateWindow({
  
     ConfigurationSaving = {
        Enabled = false,
-       FolderName = BUH, -- Create a custom folder for your hub/game
+       FolderName = "BUH", -- Create a custom folder for your hub/game
        FileName = "BoxBuh"
     },
  
@@ -405,6 +405,12 @@ outlineFrame.Size = UDim2.new(1, 10, 1, 10)
 outlineFrame.Position = UDim2.new(0, -5, 0, -5)
 outlineFrame.BackgroundTransparency = 1
 outlineFrame.BorderSizePixel = 3
+local notificationFrame = Instance.new("Frame")
+notificationFrame.Size = UDim2.new(0.5, 0, 0.1, 0)
+notificationFrame.Position = UDim2.new(0.25, 0, 0.4, 0)
+notificationFrame.BackgroundTransparency = 1
+notificationFrame.Parent = screenGui
+
 outlineFrame.Parent = notificationFrame
 
 local outlineCorner = Instance.new("UICorner")
