@@ -1369,16 +1369,23 @@ local function moveCharacter()
     end
 end
 
-local Toggle = Tab2:CreateToggle({
-   Name = "Auto AFK",
-   CurrentValue = false,
-   Flag = "AutoMove",
-   Callback = function(Value)
-       autoMove = Value
-       if autoMove then
-           moveCharacter()
-       end
-   end,
+Tab2:CreateButton({
+    Name = "Ativar Anti-AFK",
+    Callback = function()
+        local VirtualUser = game:service("VirtualUser")
+        game:service("Players").LocalPlayer.Idled:Connect(function()
+            VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            task.wait(1)
+            VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            print("[Anti-AFK] Movimento simulado para evitar desconexão.")
+        end)
+        Rayfield:Notify({
+            Title = "Anti-AFK Ativado",
+            Content = "Você não será mais desconectado por inatividade.",
+            Duration = 6,
+            Image = 4483362458,
+        })
+    end,
 })
 
 local player = game.Players.LocalPlayer
