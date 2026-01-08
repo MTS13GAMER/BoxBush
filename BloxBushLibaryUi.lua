@@ -1,15 +1,15 @@
 if (game:GetService("CoreGui")):FindFirstChild("BloxBush") and (game:GetService("CoreGui")):FindFirstChild("ScreenGui") then
-	(game:GetService("CoreGui")).BloxBush:Destroy();
+	(game:GetService("CoreGui")).RTaO:Destroy();
 	(game:GetService("CoreGui")).ScreenGui:Destroy();
 end;
 _G.Primary = Color3.fromRGB(100, 100, 100);
 _G.Dark = Color3.fromRGB(22, 22, 26);
 _G.Third = Color3.fromRGB(255, 0, 0);
-function CriarArredondado(Pai, Tamanho)
+function CreateRounded(Parent, Size)
 	local Rounded = Instance.new("UICorner");
-	Rounded.Name = "Arredondado";
-	Rounded.Parent = Pai;
-	Rounded.CornerRadius = UDim.new(0, Tamanho);
+	Rounded.Name = "Rounded";
+	Rounded.Parent = Parent;
+	Rounded.CornerRadius = UDim.new(0, Size);
 end;
 local UserInputService = game:GetService("UserInputService");
 local TweenService = game:GetService("TweenService");
@@ -60,7 +60,7 @@ OutlineButton.BackgroundColor3 = _G.Dark;
 OutlineButton.BackgroundTransparency = 0;
 OutlineButton.Position = UDim2.new(0, 10, 0, 15);
 OutlineButton.Size = UDim2.new(0, 50, 0, 50);
-CriarArredondado(OutlineButton, 12);
+CreateRounded(OutlineButton, 12);
 local ImageButton = Instance.new("ImageButton");
 ImageButton.Parent = OutlineButton;
 ImageButton.Position = UDim2.new(0.5, 0, 0.5, 0);
@@ -73,7 +73,7 @@ ImageButton.BackgroundTransparency = 0;
 ImageButton.Image = "rbxassetid://13940080072";
 ImageButton.AutoButtonColor = false;
 MakeDraggable(ImageButton, OutlineButton);
-CriarArredondado(ImageButton, 10);
+CreateRounded(ImageButton, 10);
 ImageButton.MouseButton1Click:connect(function()
 	(game.CoreGui:FindFirstChild("BloxBush")).Enabled = not (game.CoreGui:FindFirstChild("BloxBush")).Enabled;
 end);
@@ -149,15 +149,15 @@ function Update:Notify(desc)
 	Desc.TextColor3 = Color3.fromRGB(200, 200, 200);
 	Desc.TextSize = 12;
 	Desc.TextXAlignment = Enum.TextXAlignment.Left;
-	CriarArredondado(Frame, 10);
-	CriarArredondado(OutlineFrame, 12);
+	CreateRounded(Frame, 10);
+	CreateRounded(OutlineFrame, 12);
 	OutlineFrame:TweenPosition(UDim2.new(0.5, 0, 0.1 + (#NotificationList) * 0.1, 0), "Out", "Quad", 0.4, true);
 	table.insert(NotificationList, {
 		OutlineFrame,
-		Title
+		title
 	});
 end;
-function Update:StartLoading()
+function Update:StartLoad()
 	local Loader = Instance.new("ScreenGui");
 	Loader.Parent = game.CoreGui;
 	Loader.ZIndexBehavior = Enum.ZIndexBehavior.Global;
@@ -184,7 +184,7 @@ function Update:StartLoading()
 	MainLoaderFrame.BorderSizePixel = 0;
 	local TitleLoader = Instance.new("TextLabel");
 	TitleLoader.Parent = MainLoaderFrame;
-	TitleLoader.Text = "BloxBush Dev";
+	TitleLoader.Text = "BloxBush | BloxFruits | By MTS";
 	TitleLoader.Font = Enum.Font.FredokaOne;
 	TitleLoader.TextSize = 50;
 	TitleLoader.TextColor3 = Color3.fromRGB(255, 255, 255);
@@ -195,7 +195,7 @@ function Update:StartLoading()
 	TitleLoader.TextTransparency = 0;
 	local DescriptionLoader = Instance.new("TextLabel");
 	DescriptionLoader.Parent = MainLoaderFrame;
-	DescriptionLoader.Text = "Carregando...";
+	DescriptionLoader.Text = "Loading..";
 	DescriptionLoader.Font = Enum.Font.Gotham;
 	DescriptionLoader.TextSize = 15;
 	DescriptionLoader.TextColor3 = Color3.fromRGB(255, 255, 255);
@@ -218,8 +218,8 @@ function Update:StartLoading()
 	LoadingBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0);
 	LoadingBar.Size = UDim2.new(0, 0, 1, 0);
 	LoadingBar.ZIndex = 3;
-	CriarArredondado(LoadingBarBackground, 20);
-	CriarArredondado(LoadingBar, 20);
+	CreateRounded(LoadingBarBackground, 20);
+	CreateRounded(LoadingBar, 20);
 	local tweenService = game:GetService("TweenService");
 	local dotCount = 0;
 	local running = true;
@@ -240,7 +240,7 @@ function Update:StartLoading()
 		barTweenPart2.Completed:Connect(function()
 			wait(1);
 			running = false;
-			DescriptionLoader.Text = "Carregado!";
+			DescriptionLoader.Text = "Loaded!";
 			wait(0.5);
 			Loader:Destroy();
 		end);
@@ -249,7 +249,7 @@ function Update:StartLoading()
 		while running do
 			dotCount = (dotCount + 1) % 4;
 			local dots = string.rep(".", dotCount);
-			DescriptionLoader.Text = "Por favor, aguarde" .. dots;
+			DescriptionLoader.Text = "Please wait" .. dots;
 			wait(0.5);
 		end;
 	end);
@@ -274,15 +274,15 @@ local SettingsLib = {
 				SettingsLib[i] = v;
 			end;
 		end;
-		print("Biblioteca carregada!");
+		print("Loaded! | By MTS");
 	else
-		return warn("Status: Executor não detectado");
+		return warn("Status : Undetected Executor");
 	end;
 end;
 (getgenv()).SaveConfig = function()
 	if readfile and writefile and isfile and isfolder then
 		if not isfile(("BloxBush/Library/" .. game.Players.LocalPlayer.Name .. ".json")) then
-			(getgenv()).LoadConfig();
+			(getgenv()).Load();
 		else
 			local Decode = (game:GetService("HttpService")):JSONDecode(readfile("BloxBush/Library/" .. game.Players.LocalPlayer.Name .. ".json"));
 			local Array = {};
@@ -292,7 +292,7 @@ end;
 			writefile("BloxBush/Library/" .. game.Players.LocalPlayer.Name .. ".json", (game:GetService("HttpService")):JSONEncode(Array));
 		end;
 	else
-		return warn("Status: Executor não detectado");
+		return warn("Status : Undetected Executor");
 	end;
 end;
 (getgenv()).LoadConfig();
@@ -333,7 +333,7 @@ function Update:Window(Config)
 	OutlineMain.BackgroundTransparency = 0.4;
 	OutlineMain.Position = UDim2.new(0.5, 0, 0.45, 0);
 	OutlineMain.Size = UDim2.new(0, 0, 0, 0);
-	CriarArredondado(OutlineMain, 15);
+	CreateRounded(OutlineMain, 15);
 	local Main = Instance.new("Frame");
 	Main.Name = "Main";
 	Main.Parent = OutlineMain;
@@ -344,7 +344,7 @@ function Update:Window(Config)
 	Main.Position = UDim2.new(0.5, 0, 0.5, 0);
 	Main.Size = WindowConfig.Size;
 	OutlineMain:TweenSize(UDim2.new(0, WindowConfig.Size.X.Offset + 15, 0, WindowConfig.Size.Y.Offset + 15), "Out", "Quad", 0.4, true);
-	CriarArredondado(Main, 12);
+	CreateRounded(Main, 12);
 	local BtnStroke = Instance.new("UIStroke");
 	local DragButton = Instance.new("Frame");
 	DragButton.Name = "DragButton";
@@ -367,7 +367,7 @@ function Update:Window(Config)
 	Top.BackgroundColor3 = Color3.fromRGB(10, 10, 10);
 	Top.Size = UDim2.new(1, 0, 0, 40);
 	Top.BackgroundTransparency = 1;
-	CriarArredondado(Top, 5);
+	CreateRounded(Top, 5);
 	local NameHub = Instance.new("TextLabel");
 	NameHub.Name = "NameHub";
 	NameHub.Parent = Top;
@@ -409,7 +409,7 @@ function Update:Window(Config)
 	CloseButton.Image = "rbxassetid://7743878857";
 	CloseButton.ImageTransparency = 0;
 	CloseButton.ImageColor3 = Color3.fromRGB(245, 245, 245);
-	CriarArredondado(CloseButton, 3);
+	CreateRounded(CloseButton, 3);
 	CloseButton.MouseButton1Click:connect(function()
 		(game.CoreGui:FindFirstChild("BloxBush")).Enabled = not (game.CoreGui:FindFirstChild("BloxBush")).Enabled;
 	end);
@@ -424,7 +424,7 @@ function Update:Window(Config)
 	ResizeButton.Image = "rbxassetid://10734886735";
 	ResizeButton.ImageTransparency = 0;
 	ResizeButton.ImageColor3 = Color3.fromRGB(245, 245, 245);
-	CriarArredondado(ResizeButton, 3);
+	CreateRounded(ResizeButton, 3);
 	local BackgroundSettings = Instance.new("Frame");
 	BackgroundSettings.Name = "BackgroundSettings";
 	BackgroundSettings.Parent = OutlineMain;
@@ -436,7 +436,7 @@ function Update:Window(Config)
 	BackgroundSettings.Position = UDim2.new(0, 0, 0, 0);
 	BackgroundSettings.Size = UDim2.new(1, 0, 1, 0);
 	BackgroundSettings.Visible = false;
-	CriarArredondado(BackgroundSettings, 15);
+	CreateRounded(BackgroundSettings, 15);
 	local SettingsFrame = Instance.new("Frame");
 	SettingsFrame.Name = "SettingsFrame";
 	SettingsFrame.Parent = BackgroundSettings;
@@ -446,7 +446,7 @@ function Update:Window(Config)
 	SettingsFrame.BackgroundTransparency = 0;
 	SettingsFrame.Position = UDim2.new(0.5, 0, 0.5, 0);
 	SettingsFrame.Size = UDim2.new(0.7, 0, 0.7, 0);
-	CriarArredondado(SettingsFrame, 15);
+	CreateRounded(SettingsFrame, 15);
 	local CloseSettings = Instance.new("ImageButton");
 	CloseSettings.Name = "CloseSettings";
 	CloseSettings.Parent = SettingsFrame;
@@ -458,7 +458,7 @@ function Update:Window(Config)
 	CloseSettings.Image = "rbxassetid://10747384394";
 	CloseSettings.ImageTransparency = 0;
 	CloseSettings.ImageColor3 = Color3.fromRGB(245, 245, 245);
-	CriarArredondado(CloseSettings, 3);
+	CreateRounded(CloseSettings, 3);
 	CloseSettings.MouseButton1Click:connect(function()
 		BackgroundSettings.Visible = false;
 	end);
@@ -473,7 +473,7 @@ function Update:Window(Config)
 	SettingsButton.Image = "rbxassetid://10734950020";
 	SettingsButton.ImageTransparency = 0;
 	SettingsButton.ImageColor3 = Color3.fromRGB(245, 245, 245);
-	CriarArredondado(SettingsButton, 3);
+	CreateRounded(SettingsButton, 3);
 	SettingsButton.MouseButton1Click:connect(function()
 		BackgroundSettings.Visible = true;
 	end);
@@ -486,7 +486,7 @@ function Update:Window(Config)
 	TitleSettings.Size = UDim2.new(1, 0, 0, 20);
 	TitleSettings.Font = Enum.Font.GothamBold;
 	TitleSettings.AnchorPoint = Vector2.new(0, 0);
-	TitleSettings.Text = "Configurações da Biblioteca";
+	TitleSettings.Text = "Library Settings";
 	TitleSettings.TextSize = 20;
 	TitleSettings.TextColor3 = Color3.fromRGB(245, 245, 245);
 	TitleSettings.TextXAlignment = Enum.TextXAlignment.Left;
@@ -499,7 +499,7 @@ function Update:Window(Config)
 	SettingsMenuList.BackgroundTransparency = 1;
 	SettingsMenuList.Position = UDim2.new(0, 0, 0, 50);
 	SettingsMenuList.Size = UDim2.new(1, 0, 1, -70);
-	CriarArredondado(SettingsMenuList, 15);
+	CreateRounded(SettingsMenuList, 15);
 	local ScrollSettings = Instance.new("ScrollingFrame");
 	ScrollSettings.Name = "ScrollSettings";
 	ScrollSettings.Parent = SettingsMenuList;
@@ -510,7 +510,7 @@ function Update:Window(Config)
 	ScrollSettings.Size = UDim2.new(1, 0, 1, 0);
 	ScrollSettings.ScrollBarThickness = 3;
 	ScrollSettings.ScrollingDirection = Enum.ScrollingDirection.Y;
-	CriarArredondado(ScrollSettings, 5);
+	CreateRounded(SettingsMenuList, 5);
 	local SettingsListLayout = Instance.new("UIListLayout");
 	SettingsListLayout.Name = "SettingsListLayout";
 	SettingsListLayout.Parent = ScrollSettings;
@@ -552,7 +552,7 @@ function Update:Window(Config)
 		Checkbox.Image = "rbxassetid://10709790644";
 		Checkbox.ImageTransparency = 1;
 		Checkbox.ImageColor3 = Color3.fromRGB(245, 245, 245);
-		CriarArredondado(Checkbox, 5);
+		CreateRounded(Checkbox, 5);
 		Checkbox.MouseButton1Click:Connect(function()
 			checked = not checked;
 			if checked then
@@ -597,21 +597,21 @@ function Update:Window(Config)
 		Button.MouseButton1Click:Connect(function()
 			callback();
 		end);
-		CriarArredondado(Button, 5);
+		CreateRounded(Button, 5);
 	end;
-	CreateCheckbox("Salvar configurações", SettingsLib.SaveSettings, function(state)
+	CreateCheckbox("Save Settings", SettingsLib.SaveSettings, function(state)
 		SettingsLib.SaveSettings = state;
 		(getgenv()).SaveConfig();
 	end);
-	CreateCheckbox("Animação de carregamento", SettingsLib.LoadAnimation, function(state)
+	CreateCheckbox("Loading Animation", SettingsLib.LoadAnimation, function(state)
 		SettingsLib.LoadAnimation = state;
 		(getgenv()).SaveConfig();
 	end);
-	CreateButton("Redefinir Configuração", function()
+	CreateButton("Reset Config", function()
 		if isfolder("BloxBush") then
 			delfolder("BloxBush");
 		end;
-		Update:Notify("A configuração foi redefinida!");
+		Update:Notify("Config has been reseted!");
 	end);
 	local Tab = Instance.new("Frame");
 	Tab.Name = "Tab";
@@ -631,7 +631,7 @@ function Update:Window(Config)
 	ScrollTab.Size = UDim2.new(1, 0, 1, 0);
 	ScrollTab.ScrollBarThickness = 0;
 	ScrollTab.ScrollingDirection = Enum.ScrollingDirection.Y;
-	CriarArredondado(ScrollTab, 5);
+	CreateRounded(Tab, 5);
 	local TabListLayout = Instance.new("UIListLayout");
 	TabListLayout.Name = "TabListLayout";
 	TabListLayout.Parent = ScrollTab;
@@ -647,7 +647,7 @@ function Update:Window(Config)
 	Page.Position = UDim2.new(0, Tab.Size.X.Offset + 18, 0, Top.Size.Y.Offset);
 	Page.Size = UDim2.new(Config.Size.X.Scale, Config.Size.X.Offset - Tab.Size.X.Offset - 25, Config.Size.Y.Scale, Config.Size.Y.Offset - Top.Size.Y.Offset - 8);
 	Page.BackgroundTransparency = 1;
-	CriarArredondado(Page, 3);
+	CreateRounded(Page, 3);
 	local MainPage = Instance.new("Frame");
 	MainPage.Name = "MainPage";
 	MainPage.Parent = Page;
@@ -745,7 +745,7 @@ function Update:Window(Config)
 		IDK.Size = UDim2.new(0, 15, 0, 15);
 		IDK.AnchorPoint = Vector2.new(0, 0.5);
 		IDK.Image = img;
-		CriarArredondado(TabButton, 6);
+		CreateRounded(TabButton, 6);
 		local MainFramePage = Instance.new("ScrollingFrame");
 		MainFramePage.Name = text .. "_Page";
 		MainFramePage.Parent = PageList;
@@ -888,7 +888,7 @@ function Update:Window(Config)
 			ImageLabel.Image = "rbxassetid://10734898355";
 			ImageLabel.ImageTransparency = 0;
 			ImageLabel.ImageColor3 = Color3.fromRGB(255, 255, 255);
-			CriarArredondado(TextButton, 4);
+			CreateRounded(TextButton, 4);
 			TextButton.Name = "TextButton";
 			TextButton.Parent = Button;
 			TextButton.BackgroundColor3 = Color3.fromRGB(200, 200, 200);
@@ -966,7 +966,7 @@ function Update:Window(Config)
 			Button.Text = "";
 			Button.TextColor3 = Color3.fromRGB(0, 0, 0);
 			Button.TextSize = 11;
-			CriarArredondado(Button, 5);
+			CreateRounded(Button, 5);
 			Title2.Parent = Button;
 			Title2.BackgroundColor3 = Color3.fromRGB(150, 150, 150);
 			Title2.BackgroundTransparency = 1;
@@ -1014,7 +1014,7 @@ function Update:Window(Config)
 			ToggleImage.Size = UDim2.new(1, 0, 1, 0);
 			ToggleImage.Text = "";
 			ToggleImage.AutoButtonColor = false;
-			CriarArredondado(ToggleImage, 10);
+			CreateRounded(ToggleImage, 10);
 			Circle.Name = "Circle";
 			Circle.Parent = ToggleImage;
 			Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255);
@@ -1102,7 +1102,7 @@ function Update:Window(Config)
 			SelectItems.TextSize = 9;
 			SelectItems.ZIndex = 1;
 			SelectItems.ClipsDescendants = true;
-			SelectItems.Text = "Selecione os itens";
+			SelectItems.Text = "   Select Items";
 			SelectItems.TextXAlignment = Enum.TextXAlignment.Left;
 			local ArrowDown = Instance.new("ImageLabel");
 			ArrowDown.Name = "ArrowDown";
@@ -1115,8 +1115,8 @@ function Update:Window(Config)
 			ArrowDown.Image = "rbxassetid://10709790948";
 			ArrowDown.ImageTransparency = 0;
 			ArrowDown.ImageColor3 = Color3.fromRGB(255, 255, 255);
-			CriarArredondado(SelectItems, 5);
-			CriarArredondado(DropScroll, 5);
+			CreateRounded(SelectItems, 5);
+			CreateRounded(DropScroll, 5);
 			DropdownFrameScroll.Name = "DropdownFrameScroll";
 			DropdownFrameScroll.Parent = Dropdown;
 			DropdownFrameScroll.BackgroundColor3 = Color3.fromRGB(24, 24, 26);
@@ -1185,7 +1185,7 @@ function Update:Window(Config)
 				CRNRitems.CornerRadius = UDim.new(0, 999);
 				if var then
 					pcall(callback, var);
-					SelectItems.Text = " " .. var;
+					SelectItems.Text = "   " .. var;
 					activeItem = tostring(var);
 					for i, v in next, DropScroll:GetChildren() do
 						if v:IsA("TextButton") then
@@ -1222,7 +1222,7 @@ function Update:Window(Config)
 							end;
 						end;
 					end;
-					SelectItems.Text = " " .. Item.Text;
+					SelectItems.Text = "   " .. Item.Text;
 				end);
 			end;
 			DropScroll.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y);
@@ -1307,11 +1307,11 @@ function Update:Window(Config)
 							end;
 						end;
 					end;
-					SelectItems.Text = " " .. Item.Text;
+					SelectItems.Text = "   " .. Item.Text;
 				end);
 			end;
 			function dropfunc:Clear()
-				SelectItems.Text = "Selecione os itens";
+				SelectItems.Text = "   Select Items";
 				isdropping = false;
 				DropdownFrameScroll.Visible = false;
 				for i, v in next, DropScroll:GetChildren() do
@@ -1533,7 +1533,7 @@ function Update:Window(Config)
 			end;
 			return labelfunc;
 		end;
-		function main:Separator(text)
+		function main:Seperator(text)
 			local Seperator = Instance.new("Frame");
 			local Sep1 = Instance.new("TextLabel");
 			local Sep2 = Instance.new("TextLabel");
@@ -1553,7 +1553,7 @@ function Update:Window(Config)
 			Sep1.Size = UDim2.new(0, 20, 0, 36);
 			Sep1.Font = Enum.Font.GothamBold;
 			Sep1.RichText = true;
-			Sep1.Text = "⋘<font color=\"rgb(255, 0, 0)\">⋘</font>";
+			Sep1.Text = "âŒ©<font color=\"rgb(255, 0, 0)\">âŒ©</font>";
 			Sep1.TextColor3 = Color3.fromRGB(255, 255, 255);
 			Sep1.TextSize = 14;
 			Sep2.Name = "Sep2";
@@ -1576,7 +1576,7 @@ function Update:Window(Config)
 			Sep3.Size = UDim2.new(0, 20, 0, 36);
 			Sep3.Font = Enum.Font.GothamBold;
 			Sep3.RichText = true;
-			Sep3.Text = "<font color=\"rgb(255, 0, 0)\">⋙</font>⋙";
+			Sep3.Text = "<font color=\"rgb(255, 0, 0)\">âŒª</font>âŒª";
 			Sep3.TextColor3 = Color3.fromRGB(255, 255, 255);
 			Sep3.TextSize = 14;
 		end;
