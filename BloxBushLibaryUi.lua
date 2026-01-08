@@ -1,5 +1,5 @@
 if (game:GetService("CoreGui")):FindFirstChild("BloxBush") and (game:GetService("CoreGui")):FindFirstChild("ScreenGui") then
-	(game:GetService("CoreGui")).RTaO:Destroy();
+	(game:GetService("CoreGui")).BloxBush:Destroy();
 	(game:GetService("CoreGui")).ScreenGui:Destroy();
 end;
 _G.Primary = Color3.fromRGB(100, 100, 100);
@@ -70,7 +70,7 @@ ImageButton.BackgroundColor3 = _G.Dark;
 ImageButton.ImageColor3 = Color3.fromRGB(250, 250, 250);
 ImageButton.ImageTransparency = 0;
 ImageButton.BackgroundTransparency = 0;
-ImageButton.Image = "rbxassetid://13940080072";
+ImageButton.Image = "rbxassetid://17775975336";
 ImageButton.AutoButtonColor = false;
 MakeDraggable(ImageButton, OutlineButton);
 CreateRounded(ImageButton, 10);
@@ -127,7 +127,7 @@ function Update:Notify(desc)
 	Image.BackgroundTransparency = 1;
 	Image.Position = UDim2.new(0, 8, 0, 8);
 	Image.Size = UDim2.new(0, 45, 0, 45);
-	Image.Image = "rbxassetid://13940080072";
+	Image.Image = "rbxassetid://17775975336";
 	Title.Parent = Frame;
 	Title.BackgroundColor3 = _G.Primary;
 	Title.BackgroundTransparency = 1;
@@ -184,7 +184,7 @@ function Update:StartLoad()
 	MainLoaderFrame.BorderSizePixel = 0;
 	local TitleLoader = Instance.new("TextLabel");
 	TitleLoader.Parent = MainLoaderFrame;
-	TitleLoader.Text = "BloxBush | BloxFruits | By MTS";
+	TitleLoader.Text = "BloxBush | Loading...";
 	TitleLoader.Font = Enum.Font.FredokaOne;
 	TitleLoader.TextSize = 50;
 	TitleLoader.TextColor3 = Color3.fromRGB(255, 255, 255);
@@ -195,7 +195,7 @@ function Update:StartLoad()
 	TitleLoader.TextTransparency = 0;
 	local DescriptionLoader = Instance.new("TextLabel");
 	DescriptionLoader.Parent = MainLoaderFrame;
-	DescriptionLoader.Text = "Loading..";
+	DescriptionLoader.Text = "By MTS";
 	DescriptionLoader.Font = Enum.Font.Gotham;
 	DescriptionLoader.TextSize = 15;
 	DescriptionLoader.TextColor3 = Color3.fromRGB(255, 255, 255);
