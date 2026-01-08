@@ -1,4 +1,4 @@
-se (game:GetService("CoreGui")):FindFirstChild("RTaO") e (game:GetService("CoreGui")):FindFirstChild("ScreenGui") então
+se (game:GetService("CoreGui")):FindFirstChild("BloxBush") e (game:GetService("CoreGui")):FindFirstChild("ScreenGui") então
 	(game:GetService("CoreGui")).RTaO:Destroy();
 	(game:GetService("CoreGui")).ScreenGui:Destroy();
 fim;
@@ -75,7 +75,7 @@ ImageButton.AutoButtonColor = false;
 TornarArrastável(BotãoImagem, BotãoContorno);
 CriarArredondado(ImagemBotão, 10);
 ImageButton.MouseButton1Click:connect(function()
-	(game.CoreGui:FindFirstChild("RTaO")).Enabled = not (game.CoreGui:FindFirstChild("RTaO")).Enabled;
+	(game.CoreGui:FindFirstChild("BloxBush")).Enabled = not (game.CoreGui:FindFirstChild("RTaO")).Enabled;
 fim);
 local NotificationFrame = Instance.new("ScreenGui");
 NotificationFrame.Name = "NotificationFrame";
@@ -134,7 +134,7 @@ função Atualizar:Notificar(desc)
 	Título.Posição = UDim2.new(0, 55, 0, 14);
 	Título.Tamanho = UDim2.new(0, 10, 0, 20);
 	Título.Fonte = Enum.Fonte.GothamBold;
-	Título.Texto = "RTaO";
+	Título.Texto = "BloxBush";
 	Title.TextColor3 = Color3.fromRGB(255, 255, 255);
 	Título.TamanhoDoTexto = 16;
 	Título.TextXAlignment = Enum.TextXAlignment.Left;
