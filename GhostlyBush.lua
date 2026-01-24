@@ -1,4 +1,4 @@
--- GhostlyBush Library v1.0.1 (Corrigido)
+-- GhostlyBush Library v1.0.2 (Corrigido - UICorner)
 -- Por: MTS13GAMER
 -- Inspirado no Wind UI
 
@@ -36,7 +36,7 @@ end
 
 -- Biblioteca principal
 local GhostlyBush = {
-    Version = "1.0.1",
+    Version = "1.0.2",
     Themes = {},
     CurrentTheme = "Dark",
     Windows = {},
@@ -183,7 +183,7 @@ function Window:CreateUI()
         Parent = self.ScreenGui
     })
     
-    -- Corner para arredondamento
+    -- Corner para arredondamento (APENAS CornerRadius, sem propriedade Corner)
     Create("UICorner", {
         CornerRadius = UDim.new(0, 8),
         Parent = self.MainFrame
@@ -213,9 +213,13 @@ function Window:CreateUI()
         Parent = self.MainFrame
     })
     
-    Create("UICorner", {
-        CornerRadius = UDim.new(0, 8),
-        Corner = Enum.Corner.TopLeft + Enum.Corner.TopRight,
+    -- Apenas arredondar os cantos superiores manualmente usando um Frame separado
+    local topBarCorner = Create("Frame", {
+        Name = "TopBarCorner",
+        Size = UDim2.new(1, 0, 0, 8),
+        Position = UDim2.new(0, 0, 1, -8),
+        BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary,
+        BorderSizePixel = 0,
         Parent = self.TopBar
     })
     
