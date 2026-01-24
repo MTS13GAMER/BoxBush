@@ -1,54 +1,60 @@
--- GhostlyBush Library v1.0.2 (Corrigido - UICorner)
+-- GhostlyBush Library v1.0.3 (Completo e Funcional)
 -- Por: MTS13GAMER
 -- Inspirado no Wind UI
 
--- Serviços
+-- Serviços do Roblox
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local CoreGui = game:GetService("CoreGui")
 
--- Funções utilitárias
-local function Create(class, props)
+-- Função utilitária para criar instâncias
+local function Create(class, properties)
     local obj = Instance.new(class)
-    for prop, value in pairs(props) do
+    for prop, value in pairs(properties) do
         if prop ~= "Parent" and prop ~= "Children" then
             obj[prop] = value
         end
     end
-    if props.Parent then
-        obj.Parent = props.Parent
-    end
-    if props.Children then
-        for _, child in ipairs(props.Children) do
-            child.Parent = obj
-        end
+    if properties.Parent then
+        obj.Parent = properties.Parent
     end
     return obj
 end
 
-local function Tween(obj, props, duration, style, direction)
-    local tweenInfo = TweenInfo.new(duration or 0.2, style or Enum.EasingStyle.Quad, direction or Enum.EasingDirection.Out)
-    local tween = TweenService:Create(obj, tweenInfo, props)
+-- Função para criar tweens
+local function Tween(obj, properties, duration, easingStyle, easingDirection)
+    local tweenInfo = TweenInfo.new(
+        duration or 0.2,
+        easingStyle or Enum.EasingStyle.Quad,
+        easingDirection or Enum.EasingDirection.Out
+    )
+    local tween = TweenService:Create(obj, tweenInfo, properties)
     tween:Play()
     return tween
 end
 
 -- Biblioteca principal
 local GhostlyBush = {
-    Version = "1.0.2",
+    Version = "1.0.3",
     Themes = {},
     CurrentTheme = "Dark",
     Windows = {},
-    Elements = {},
     Config = {}
 }
 
 -- Configurações padrão
 local DefaultConfig = {
+    Title = "GhostlyBush Window",
+    Icon = "ghost",
+    Author = "GhostlyBush",
+    Folder = "GhostlyBushConfig",
     Size = UDim2.fromOffset(580, 460),
     MinSize = Vector2.new(560, 350),
     MaxSize = Vector2.new(850, 560),
+    Position = UDim2.fromScale(0.5, 0.5),
     Transparent = false,
     Theme = "Dark",
     Resizable = true,
@@ -56,11 +62,10 @@ local DefaultConfig = {
     BackgroundImageTransparency = 0.42,
     HideSearchBar = false,
     ScrollBarEnabled = true,
-    CloseKey = Enum.KeyCode.RightControl,
-    Position = UDim2.fromScale(0.5, 0.5)
+    CloseKey = Enum.KeyCode.RightControl
 }
 
--- Tema padrão (Black)
+-- Tema padrão Dark
 GhostlyBush.Themes.Dark = {
     Main = Color3.fromRGB(25, 25, 25),
     Secondary = Color3.fromRGB(35, 35, 35),
@@ -75,89 +80,36 @@ GhostlyBush.Themes.Dark = {
     Pressed = Color3.fromRGB(30, 30, 30)
 }
 
--- Sistema de Key
-local KeySystem = {}
-KeySystem.__index = KeySystem
-
-function KeySystem.new(config)
-    local self = setmetatable({}, KeySystem)
-    
-    self.Key = config.Key or {}
-    self.Note = config.Note or ""
-    self.Thumbnail = config.Thumbnail or {}
-    self.URL = config.URL or ""
-    self.SaveKey = config.SaveKey or false
-    self.OnSuccess = config.Callback or function() end
-    self.OnFail = config.OnFail or function() end
-    
-    if self.SaveKey then
-        pcall(function()
-            if isfile and isfile("GhostlyBush_Key.txt") then
-                local savedKey = readfile("GhostlyBush_Key.txt")
-                self:Validate(savedKey)
-            end
-        end)
-    end
-    
-    return self
-end
-
-function KeySystem:Validate(input)
-    for _, key in ipairs(self.Key) do
-        if input == key then
-            if self.SaveKey then
-                pcall(function()
-                    writefile("GhostlyBush_Key.txt", key)
-                end)
-            end
-            self.OnSuccess()
-            return true
-        end
-    end
-    self.OnFail()
-    return false
-end
-
--- Janela Principal
+-- Classe Window
 local Window = {}
 Window.__index = Window
 
 function Window.new(config)
     local self = setmetatable({}, Window)
     
-    -- Mesclar configurações
+    -- Mesclar configurações com padrões
     for key, value in pairs(DefaultConfig) do
         self[key] = config[key] or value
     end
     
     -- Configurações específicas
-    self.Title = config.Title or "GhostlyBush Window"
-    self.Icon = config.Icon or "ghost"
-    self.Author = config.Author or "GhostlyBush"
-    self.Folder = config.Folder or "GhostlyBushConfig"
+    self.Title = config.Title or DefaultConfig.Title
+    self.Icon = config.Icon or DefaultConfig.Icon
+    self.Author = config.Author or DefaultConfig.Author
+    self.Folder = config.Folder or DefaultConfig.Folder
     self.Background = config.Background
+    self.User = config.User or {Enabled = false}
+    self.KeySystem = config.KeySystem
     
-    -- Elementos
+    -- Estado
     self.Tabs = {}
     self.Elements = {}
     self.Open = true
     
-    -- Sistema de Key
-    if config.KeySystem then
-        self.KeySystem = KeySystem.new(config.KeySystem)
-        if not self.KeySystem.Key or #self.KeySystem.Key == 0 then
-            self.KeySystem = nil
-        end
-    end
-    
-    -- Criar interface
+    -- Criar UI
     self:CreateUI()
     
-    -- Sistema de Usuário
-    if config.User and config.User.Enabled then
-        self:SetupUser(config.User)
-    end
-    
+    -- Adicionar à lista de janelas
     table.insert(GhostlyBush.Windows, self)
     
     return self
@@ -166,12 +118,12 @@ end
 function Window:CreateUI()
     -- ScreenGui principal
     self.ScreenGui = Create("ScreenGui", {
-        Name = "GhostlyBush_" .. self.Title:gsub("%s+", "_"),
+        Name = "GhostlyBush_" .. HttpService:GenerateGUID(false):sub(1, 8),
         DisplayOrder = 100,
         ResetOnSpawn = false
     })
     
-    -- Main Frame com arredondamento
+    -- Frame principal
     self.MainFrame = Create("Frame", {
         Name = "MainFrame",
         Size = self.Size,
@@ -179,32 +131,16 @@ function Window:CreateUI()
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = GhostlyBush.Themes[self.Theme].Main,
         BorderSizePixel = 0,
-        ClipsDescendants = true,
-        Parent = self.ScreenGui
+        ClipsDescendants = true
     })
     
-    -- Corner para arredondamento (APENAS CornerRadius, sem propriedade Corner)
+    -- Arredondamento do frame principal
     Create("UICorner", {
         CornerRadius = UDim.new(0, 8),
         Parent = self.MainFrame
     })
     
-    -- Shadow
-    Create("ImageLabel", {
-        Name = "Shadow",
-        Size = UDim2.new(1, 12, 1, 12),
-        Position = UDim2.new(0.5, -6, 0.5, -6),
-        AnchorPoint = Vector2.new(0.5, 0.5),
-        BackgroundTransparency = 1,
-        Image = "rbxassetid://1316045217",
-        ImageColor3 = Color3.fromRGB(0, 0, 0),
-        ImageTransparency = 0.8,
-        ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(10, 10, 118, 118),
-        Parent = self.MainFrame
-    })
-    
-    -- Top Bar
+    -- Barra superior
     self.TopBar = Create("Frame", {
         Name = "TopBar",
         Size = UDim2.new(1, 0, 0, 40),
@@ -213,21 +149,11 @@ function Window:CreateUI()
         Parent = self.MainFrame
     })
     
-    -- Apenas arredondar os cantos superiores manualmente usando um Frame separado
-    local topBarCorner = Create("Frame", {
-        Name = "TopBarCorner",
-        Size = UDim2.new(1, 0, 0, 8),
-        Position = UDim2.new(0, 0, 1, -8),
-        BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary,
-        BorderSizePixel = 0,
-        Parent = self.TopBar
-    })
-    
     -- Título
     self.TitleLabel = Create("TextLabel", {
         Name = "TitleLabel",
         Size = UDim2.new(1, -80, 1, 0),
-        Position = UDim2.new(0, 15, 0, 0),
+        Position = UDim2.new(0, 10, 0, 0),
         BackgroundTransparency = 1,
         Text = self.Title,
         TextColor3 = GhostlyBush.Themes[self.Theme].Text,
@@ -237,8 +163,8 @@ function Window:CreateUI()
         Parent = self.TopBar
     })
     
-    -- Botões de controle
-    local closeBtn = Create("TextButton", {
+    -- Botão de fechar
+    local closeButton = Create("TextButton", {
         Name = "CloseButton",
         Size = UDim2.new(0, 30, 0, 30),
         Position = UDim2.new(1, -35, 0.5, 0),
@@ -253,20 +179,20 @@ function Window:CreateUI()
     
     Create("UICorner", {
         CornerRadius = UDim.new(1, 0),
-        Parent = closeBtn
+        Parent = closeButton
     })
     
-    closeBtn.MouseButton1Click:Connect(function()
+    closeButton.MouseButton1Click:Connect(function()
         self:Toggle()
     end)
     
     -- Efeitos hover no botão de fechar
-    closeBtn.MouseEnter:Connect(function()
-        Tween(closeBtn, {Size = UDim2.new(0, 32, 0, 32)}, 0.2)
+    closeButton.MouseEnter:Connect(function()
+        Tween(closeButton, {Size = UDim2.new(0, 32, 0, 32)}, 0.2)
     end)
     
-    closeBtn.MouseLeave:Connect(function()
-        Tween(closeBtn, {Size = UDim2.new(0, 30, 0, 30)}, 0.2)
+    closeButton.MouseLeave:Connect(function()
+        Tween(closeButton, {Size = UDim2.new(0, 30, 0, 30)}, 0.2)
     end)
     
     -- Sidebar
@@ -279,7 +205,7 @@ function Window:CreateUI()
         Parent = self.MainFrame
     })
     
-    -- Conteúdo
+    -- Área de conteúdo
     self.Content = Create("Frame", {
         Name = "Content",
         Size = UDim2.new(1, -self.SideBarWidth, 1, -40),
@@ -289,7 +215,7 @@ function Window:CreateUI()
         Parent = self.MainFrame
     })
     
-    -- Tab Buttons Container
+    -- Container de abas
     self.TabContainer = Create("ScrollingFrame", {
         Name = "TabContainer",
         Size = UDim2.new(1, 0, 1, -40),
@@ -318,7 +244,7 @@ function Window:CreateUI()
         self.TabContainer.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 20)
     end)
     
-    -- Barra de pesquisa (se não estiver escondida)
+    -- Barra de pesquisa (opcional)
     if not self.HideSearchBar then
         self.SearchBar = Create("TextBox", {
             Name = "SearchBar",
@@ -345,37 +271,45 @@ function Window:CreateUI()
             PaddingRight = UDim.new(0, 10)
         })
         
-        -- Ajustar posição do container de tabs
+        -- Ajustar posição do container
         self.TabContainer.Size = UDim2.new(1, 0, 1, -80)
         self.TabContainer.Position = UDim2.new(0, 0, 0, 45)
     end
     
-    -- Aplicar redimensionamento
+    -- Aplicar redimensionamento se habilitado
     if self.Resizable then
         self:MakeResizable()
     end
     
-    -- Aplicar transparência
+    -- Aplicar transparência se habilitada
     if self.Transparent then
         self.MainFrame.BackgroundTransparency = 0.5
         self.TopBar.BackgroundTransparency = 0.5
         self.SideBar.BackgroundTransparency = 0.5
     end
     
-    -- Aplicar background
+    -- Configurar background se fornecido
     if self.Background then
         self:SetBackground(self.Background)
     end
     
-    -- Conectar tecla de fechar
+    -- Configurar tecla de fechar
     self:ConnectCloseKey()
     
-    -- Parent no final
-    self.ScreenGui.Parent = game:GetService("CoreGui") or game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    -- Configurar usuário se habilitado
+    if self.User and self.User.Enabled then
+        self:SetupUser(self.User)
+    end
+    
+    -- Parent final
+    self.ScreenGui.Parent = CoreGui
+    self.MainFrame.Parent = self.ScreenGui
+    
+    return self
 end
 
 function Window:MakeResizable()
-    local dragButton = Create("TextButton", {
+    local resizeHandle = Create("TextButton", {
         Name = "ResizeHandle",
         Size = UDim2.new(0, 15, 0, 15),
         Position = UDim2.new(1, -15, 1, -15),
@@ -386,24 +320,24 @@ function Window:MakeResizable()
     
     Create("UICorner", {
         CornerRadius = UDim.new(1, 0),
-        Parent = dragButton
+        Parent = resizeHandle
     })
     
     local dragging = false
     local startPos
     local startSize
     
-    dragButton.MouseButton1Down:Connect(function()
+    resizeHandle.MouseButton1Down:Connect(function()
         dragging = true
         startPos = UserInputService:GetMouseLocation()
         startSize = self.MainFrame.AbsoluteSize
-        dragButton.Size = UDim2.new(0, 17, 0, 17)
+        resizeHandle.Size = UDim2.new(0, 17, 0, 17)
     end)
     
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = false
-            dragButton.Size = UDim2.new(0, 15, 0, 15)
+            resizeHandle.Size = UDim2.new(0, 15, 0, 15)
         end
     end)
     
@@ -418,28 +352,14 @@ function Window:MakeResizable()
             )
             
             self.MainFrame.Size = UDim2.fromOffset(newSize.X, newSize.Y)
-            self.Size = self.MainFrame.Size
         end
     end)
 end
 
 function Window:SetBackground(background)
-    if background:sub(1, 6) == "video:" then
-        local videoId = background:sub(7)
-        local video = Create("VideoFrame", {
-            Size = UDim2.new(1, 0, 1, 0),
-            BackgroundTransparency = 1,
-            Looped = true,
-            Playing = true,
-            Parent = self.MainFrame
-        })
-        
-        video.ZIndex = -1
-        
-        pcall(function()
-            video.Video = videoId:find("rbxassetid://") and videoId or "rbxassetid://" .. videoId
-        end)
-    elseif background:find("rbxassetid://") or background:find("http") then
+    if type(background) ~= "string" then return end
+    
+    if background:find("^rbxassetid://") then
         local image = Create("ImageLabel", {
             Size = UDim2.new(1, 0, 1, 0),
             BackgroundTransparency = 1,
@@ -447,52 +367,62 @@ function Window:SetBackground(background)
             ScaleType = Enum.ScaleType.Crop,
             Parent = self.MainFrame
         })
-        
+        image.ZIndex = -1
+        image.ImageTransparency = self.BackgroundImageTransparency
+    elseif background:find("^http") then
+        local image = Create("ImageLabel", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Image = background,
+            ScaleType = Enum.ScaleType.Crop,
+            Parent = self.MainFrame
+        })
         image.ZIndex = -1
         image.ImageTransparency = self.BackgroundImageTransparency
     end
 end
 
 function Window:ConnectCloseKey()
-    local connection
-    connection = UserInputService.InputBegan:Connect(function(input, processed)
+    local connection = UserInputService.InputBegan:Connect(function(input, processed)
         if not processed and input.KeyCode == self.CloseKey then
             self:Toggle()
         end
     end)
-    
     table.insert(self.Elements, connection)
 end
 
 function Window:SetupUser(config)
     spawn(function()
-        local LocalPlayer = Players.LocalPlayer
-        local userId = LocalPlayer.UserId
+        local player = Players.LocalPlayer
+        if not player then return end
+        
         local thumbType = config.Anonymous and Enum.ThumbnailType.HeadShot or Enum.ThumbnailType.AvatarThumbnail
         local thumbSize = Enum.ThumbnailSize.Size420x420
         
-        local content, isReady = Players:GetUserThumbnailAsync(userId, thumbType, thumbSize)
-        
-        local userBtn = Create("ImageButton", {
-            Name = "UserButton",
-            Size = UDim2.new(0, 30, 0, 30),
-            Position = UDim2.new(1, -75, 0.5, 0),
-            AnchorPoint = Vector2.new(0, 0.5),
-            BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary,
-            Image = content,
-            Parent = self.TopBar
-        })
-        
-        Create("UICorner", {
-            CornerRadius = UDim.new(1, 0),
-            Parent = userBtn
-        })
-        
-        userBtn.MouseButton1Click:Connect(function()
-            if config.Callback then
-                config.Callback()
-            end
+        local success, result = pcall(function()
+            return Players:GetUserThumbnailAsync(player.UserId, thumbType, thumbSize)
         end)
+        
+        if success then
+            local userButton = Create("ImageButton", {
+                Name = "UserButton",
+                Size = UDim2.new(0, 30, 0, 30),
+                Position = UDim2.new(1, -75, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
+                BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary,
+                Image = result,
+                Parent = self.TopBar
+            })
+            
+            Create("UICorner", {
+                CornerRadius = UDim.new(1, 0),
+                Parent = userButton
+            })
+            
+            if config.Callback then
+                userButton.MouseButton1Click:Connect(config.Callback)
+            end
+        end
     end)
 end
 
@@ -505,10 +435,11 @@ function Window:CreateTab(options)
     local tab = {
         Name = options.Name or "Tab",
         Icon = options.Icon or "folder",
-        LayoutOrder = options.LayoutOrder or #self.Tabs + 1
+        LayoutOrder = options.LayoutOrder or #self.Tabs + 1,
+        Elements = {}
     }
     
-    -- Botão da tab
+    -- Botão da aba
     local tabButton = Create("TextButton", {
         Name = tab.Name .. "TabButton",
         Size = UDim2.new(1, 0, 0, 40),
@@ -527,8 +458,8 @@ function Window:CreateTab(options)
         Parent = tabButton
     })
     
-    -- Frame do conteúdo da tab
-    local tabFrame = Create("ScrollingFrame", {
+    -- Frame do conteúdo da aba
+    local tabContent = Create("ScrollingFrame", {
         Name = tab.Name .. "Content",
         Size = UDim2.new(1, 0, 1, 0),
         BackgroundTransparency = 1,
@@ -538,25 +469,25 @@ function Window:CreateTab(options)
         Parent = self.Content
     })
     
-    local layout = Create("UIListLayout", {
-        Parent = tabFrame,
+    local contentLayout = Create("UIListLayout", {
+        Parent = tabContent,
         SortOrder = Enum.SortOrder.LayoutOrder,
         Padding = UDim.new(0, 10)
     })
     
-    local padding = Create("UIPadding", {
-        Parent = tabFrame,
+    Create("UIPadding", {
+        Parent = tabContent,
         PaddingTop = UDim.new(0, 10),
         PaddingLeft = UDim.new(0, 10),
         PaddingRight = UDim.new(0, 10),
         PaddingBottom = UDim.new(0, 10)
     })
     
-    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        tabFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 20)
+    contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        tabContent.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 20)
     end)
     
-    -- Efeitos hover
+    -- Efeitos hover no botão da aba
     tabButton.MouseEnter:Connect(function()
         if not tabButton.Active then
             Tween(tabButton, {BackgroundColor3 = GhostlyBush.Themes[self.Theme].Hover}, 0.2)
@@ -569,16 +500,15 @@ function Window:CreateTab(options)
         end
     end)
     
-    -- Conectar clique
+    -- Selecionar aba ao clicar
     tabButton.MouseButton1Click:Connect(function()
         self:SelectTab(tab.Name)
     end)
     
     tab.Button = tabButton
-    tab.Frame = tabFrame
-    tab.Elements = {}
+    tab.Content = tabContent
     
-    -- Métodos da tab
+    -- Métodos da aba
     function tab:CreateSection(options)
         local section = {
             Name = options.Name or "Section",
@@ -588,11 +518,11 @@ function Window:CreateTab(options)
         
         local sectionFrame = Create("Frame", {
             Name = section.Name .. "Section",
-            Size = UDim2.new(1, 0, 0, options.Collapsible and 40 or 50),
+            Size = UDim2.new(1, 0, 0, section.Collapsible and 40 or 50),
             BackgroundColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Secondary,
             BorderSizePixel = 0,
             LayoutOrder = options.LayoutOrder or #self.Elements + 1,
-            Parent = self.Frame
+            Parent = self.Content
         })
         
         Create("UICorner", {
@@ -621,7 +551,6 @@ function Window:CreateTab(options)
             Parent = sectionFrame
         })
         
-        section.Frame = sectionFrame
         section.Content = Create("Frame", {
             Name = "Content",
             Size = UDim2.new(1, 0, 1, -40),
@@ -631,21 +560,21 @@ function Window:CreateTab(options)
             Parent = sectionFrame
         })
         
-        local contentLayout = Create("UIListLayout", {
+        local contentList = Create("UIListLayout", {
             Parent = section.Content,
             SortOrder = Enum.SortOrder.LayoutOrder,
             Padding = UDim.new(0, 5)
         })
         
-        contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        contentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
             if not section.Collapsed then
-                sectionFrame.Size = UDim2.new(1, 0, 0, 40 + contentLayout.AbsoluteContentSize.Y + 10)
+                sectionFrame.Size = UDim2.new(1, 0, 0, 40 + contentList.AbsoluteContentSize.Y + 10)
             end
         end)
         
         -- Botão de colapso
         if section.Collapsible then
-            local collapseBtn = Create("TextButton", {
+            local collapseButton = Create("TextButton", {
                 Name = "CollapseButton",
                 Size = UDim2.new(0, 30, 0, 30),
                 Position = UDim2.new(1, -30, 0.5, 0),
@@ -658,19 +587,20 @@ function Window:CreateTab(options)
                 Parent = sectionFrame
             })
             
-            collapseBtn.MouseButton1Click:Connect(function()
+            collapseButton.MouseButton1Click:Connect(function()
                 section.Collapsed = not section.Collapsed
                 section.Content.Visible = not section.Collapsed
-                collapseBtn.Text = section.Collapsed and "˅" or "˄"
+                collapseButton.Text = section.Collapsed and "˅" or "˄"
                 
                 if section.Collapsed then
                     sectionFrame.Size = UDim2.new(1, 0, 0, 40)
                 else
-                    sectionFrame.Size = UDim2.new(1, 0, 0, 40 + contentLayout.AbsoluteContentSize.Y + 10)
+                    sectionFrame.Size = UDim2.new(1, 0, 0, 40 + contentList.AbsoluteContentSize.Y + 10)
                 end
             end)
         end
         
+        section.Frame = sectionFrame
         table.insert(self.Elements, section)
         return section
     end
@@ -681,6 +611,9 @@ function Window:CreateTab(options)
             Callback = options.Callback or function() end
         }
         
+        local parent = options.Section and options.Section.Content or self.Content
+        local layoutOrder = options.LayoutOrder or #self.Elements + 1
+        
         local buttonFrame = Create("TextButton", {
             Name = button.Name .. "Button",
             Size = UDim2.new(1, 0, 0, 35),
@@ -689,8 +622,8 @@ function Window:CreateTab(options)
             TextColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Text,
             TextSize = 14,
             Font = Enum.Font.Gotham,
-            LayoutOrder = options.LayoutOrder or #self.Elements + 1,
-            Parent = options.Section and options.Section.Content or self.Frame
+            LayoutOrder = layoutOrder,
+            Parent = parent
         })
         
         Create("UICorner", {
@@ -724,12 +657,15 @@ function Window:CreateTab(options)
             Value = options.Default or false
         }
         
+        local parent = options.Section and options.Section.Content or self.Content
+        local layoutOrder = options.LayoutOrder or #self.Elements + 1
+        
         local toggleFrame = Create("Frame", {
             Name = toggle.Name .. "Toggle",
             Size = UDim2.new(1, 0, 0, 35),
             BackgroundTransparency = 1,
-            LayoutOrder = options.LayoutOrder or #self.Elements + 1,
-            Parent = options.Section and options.Section.Content or self.Frame
+            LayoutOrder = layoutOrder,
+            Parent = parent
         })
         
         local toggleLabel = Create("TextLabel", {
@@ -789,9 +725,7 @@ function Window:CreateTab(options)
             updateToggle()
         end)
         
-        toggle.Toggle = toggleButton
         updateToggle()
-        
         table.insert(self.Elements, toggle)
         return toggle
     end
@@ -807,12 +741,15 @@ function Window:CreateTab(options)
             Decimals = options.Decimals or 0
         }
         
+        local parent = options.Section and options.Section.Content or self.Content
+        local layoutOrder = options.LayoutOrder or #self.Elements + 1
+        
         local sliderFrame = Create("Frame", {
             Name = slider.Name .. "Slider",
             Size = UDim2.new(1, 0, 0, 60),
             BackgroundTransparency = 1,
-            LayoutOrder = options.LayoutOrder or #self.Elements + 1,
-            Parent = options.Section and options.Section.Content or self.Frame
+            LayoutOrder = layoutOrder,
+            Parent = parent
         })
         
         local sliderLabel = Create("TextLabel", {
@@ -852,8 +789,8 @@ function Window:CreateTab(options)
             Parent = sliderFill
         })
         
-        local sliderButton = Create("TextButton", {
-            Name = "SliderButton",
+        local sliderHandle = Create("TextButton", {
+            Name = "SliderHandle",
             Size = UDim2.new(0, 15, 0, 15),
             Position = UDim2.new(sliderFill.Size.X.Scale, 0, 0.5, 0),
             AnchorPoint = Vector2.new(0.5, 0.5),
@@ -864,32 +801,32 @@ function Window:CreateTab(options)
         
         Create("UICorner", {
             CornerRadius = UDim.new(1, 0),
-            Parent = sliderButton
+            Parent = sliderHandle
         })
         
         local dragging = false
         
-        local function formatNumber(num)
+        local function formatValue(value)
             if slider.Decimals == 0 then
-                return tostring(math.floor(num))
+                return tostring(math.floor(value))
             else
-                return string.format("%." .. slider.Decimals .. "f", num)
+                return string.format("%." .. slider.Decimals .. "f", value)
             end
         end
         
         local function updateSlider(value)
             value = math.clamp(value, slider.Min, slider.Max)
             slider.Value = value
-            sliderLabel.Text = slider.Name .. ": " .. formatNumber(value)
+            sliderLabel.Text = slider.Name .. ": " .. formatValue(value)
             
             local scale = (value - slider.Min) / (slider.Max - slider.Min)
             sliderFill.Size = UDim2.new(scale, 0, 1, 0)
-            sliderButton.Position = UDim2.new(scale, 0, 0.5, 0)
+            sliderHandle.Position = UDim2.new(scale, 0, 0.5, 0)
             
             slider.Callback(value)
         end
         
-        sliderButton.MouseButton1Down:Connect(function()
+        sliderHandle.MouseButton1Down:Connect(function()
             dragging = true
         end)
         
@@ -927,136 +864,8 @@ function Window:CreateTab(options)
         end)
         
         updateSlider(slider.Default)
-        
-        slider.Slider = sliderButton
         table.insert(self.Elements, slider)
         return slider
-    end
-    
-    function tab:CreateDropdown(options)
-        local dropdown = {
-            Name = options.Name or "Dropdown",
-            Options = options.Options or {},
-            Default = options.Default or options.Options[1],
-            Callback = options.Callback or function() end,
-            Value = options.Default or options.Options[1],
-            Open = false
-        }
-        
-        local dropdownFrame = Create("Frame", {
-            Name = dropdown.Name .. "Dropdown",
-            Size = UDim2.new(1, 0, 0, 35),
-            BackgroundTransparency = 1,
-            LayoutOrder = options.LayoutOrder or #self.Elements + 1,
-            Parent = options.Section and options.Section.Content or self.Frame
-        })
-        
-        local dropdownLabel = Create("TextLabel", {
-            Name = "Label",
-            Size = UDim2.new(1, -120, 1, 0),
-            BackgroundTransparency = 1,
-            Text = dropdown.Name,
-            TextColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Text,
-            TextSize = 14,
-            Font = Enum.Font.Gotham,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = dropdownFrame
-        })
-        
-        local dropdownButton = Create("TextButton", {
-            Name = "DropdownButton",
-            Size = UDim2.new(0, 100, 0, 35),
-            Position = UDim2.new(1, -100, 0, 0),
-            BackgroundColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Secondary,
-            Text = dropdown.Value,
-            TextColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Text,
-            TextSize = 14,
-            Font = Enum.Font.Gotham,
-            Parent = dropdownFrame
-        })
-        
-        Create("UICorner", {
-            CornerRadius = UDim.new(0, 6),
-            Parent = dropdownButton
-        })
-        
-        local dropdownList = Create("ScrollingFrame", {
-            Name = "DropdownList",
-            Size = UDim2.new(0, 100, 0, 0),
-            Position = UDim2.new(1, -100, 1, 5),
-            BackgroundColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Secondary,
-            Visible = false,
-            ScrollBarThickness = 3,
-            ScrollBarImageColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Accent,
-            Parent = dropdownFrame
-        })
-        
-        Create("UICorner", {
-            CornerRadius = UDim.new(0, 6),
-            Parent = dropdownList
-        })
-        
-        local listLayout = Create("UIListLayout", {
-            Parent = dropdownList,
-            SortOrder = Enum.SortOrder.LayoutOrder
-        })
-        
-        Create("UIPadding", {
-            Parent = dropdownList,
-            PaddingTop = UDim.new(0, 5),
-            PaddingBottom = UDim.new(0, 5)
-        })
-        
-        dropdownButton.MouseButton1Click:Connect(function()
-            dropdown.Open = not dropdown.Open
-            dropdownList.Visible = dropdown.Open
-            
-            if dropdown.Open then
-                dropdownList.Size = UDim2.new(0, 100, 0, math.min(#dropdown.Options * 30, 150))
-            else
-                dropdownList.Size = UDim2.new(0, 100, 0, 0)
-            end
-        end)
-        
-        for _, option in ipairs(dropdown.Options) do
-            local optionButton = Create("TextButton", {
-                Size = UDim2.new(1, -10, 0, 30),
-                Position = UDim2.new(0.5, 0, 0, 0),
-                AnchorPoint = Vector2.new(0.5, 0),
-                BackgroundColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Secondary,
-                Text = option,
-                TextColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Text,
-                TextSize = 14,
-                Font = Enum.Font.Gotham,
-                Parent = dropdownList
-            })
-            
-            Create("UICorner", {
-                CornerRadius = UDim.new(0, 4),
-                Parent = optionButton
-            })
-            
-            optionButton.MouseButton1Click:Connect(function()
-                dropdown.Value = option
-                dropdownButton.Text = option
-                dropdown.Open = false
-                dropdownList.Visible = false
-                dropdownList.Size = UDim2.new(0, 100, 0, 0)
-                dropdown.Callback(option)
-            end)
-            
-            optionButton.MouseEnter:Connect(function()
-                Tween(optionButton, {BackgroundColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Hover}, 0.2)
-            end)
-            
-            optionButton.MouseLeave:Connect(function()
-                Tween(optionButton, {BackgroundColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Secondary}, 0.2)
-            end)
-        end
-        
-        dropdown.Button = dropdownButton
-        table.insert(self.Elements, dropdown)
-        return dropdown
     end
     
     function tab:CreateLabel(options)
@@ -1064,6 +873,9 @@ function Window:CreateTab(options)
             Text = options.Text or "Label",
             Color = options.Color or GhostlyBush.Themes[GhostlyBush.CurrentTheme].Text
         }
+        
+        local parent = options.Section and options.Section.Content or self.Content
+        local layoutOrder = options.LayoutOrder or #self.Elements + 1
         
         local labelFrame = Create("TextLabel", {
             Name = "Label",
@@ -1074,78 +886,15 @@ function Window:CreateTab(options)
             TextSize = options.TextSize or 14,
             Font = options.Font or Enum.Font.Gotham,
             TextXAlignment = options.Alignment or Enum.TextXAlignment.Left,
-            LayoutOrder = options.LayoutOrder or #self.Elements + 1,
-            Parent = options.Section and options.Section.Content or self.Frame
+            LayoutOrder = layoutOrder,
+            Parent = parent
         })
         
         table.insert(self.Elements, label)
         return label
     end
     
-    function tab:CreateTextBox(options)
-        local textbox = {
-            Name = options.Name or "TextBox",
-            Placeholder = options.Placeholder or "Digite algo...",
-            Callback = options.Callback or function() end,
-            Text = options.Default or ""
-        }
-        
-        local textboxFrame = Create("Frame", {
-            Name = textbox.Name .. "TextBox",
-            Size = UDim2.new(1, 0, 0, 35),
-            BackgroundTransparency = 1,
-            LayoutOrder = options.LayoutOrder or #self.Elements + 1,
-            Parent = options.Section and options.Section.Content or self.Frame
-        })
-        
-        local textboxLabel = Create("TextLabel", {
-            Name = "Label",
-            Size = UDim2.new(1, 0, 0, 15),
-            BackgroundTransparency = 1,
-            Text = textbox.Name,
-            TextColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Text,
-            TextSize = 12,
-            Font = Enum.Font.Gotham,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = textboxFrame
-        })
-        
-        local inputBox = Create("TextBox", {
-            Name = "Input",
-            Size = UDim2.new(1, 0, 0, 35),
-            Position = UDim2.new(0, 0, 0, 15),
-            BackgroundColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Secondary,
-            PlaceholderText = textbox.Placeholder,
-            PlaceholderColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].SubText,
-            TextColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Text,
-            TextSize = 14,
-            Font = Enum.Font.Gotham,
-            Text = textbox.Text,
-            Parent = textboxFrame
-        })
-        
-        Create("UICorner", {
-            CornerRadius = UDim.new(0, 6),
-            Parent = inputBox
-        })
-        
-        Create("UIPadding", {
-            Parent = inputBox,
-            PaddingLeft = UDim.new(0, 10),
-            PaddingRight = UDim.new(0, 10)
-        })
-        
-        inputBox.FocusLost:Connect(function(enterPressed)
-            textbox.Text = inputBox.Text
-            textbox.Callback(inputBox.Text, enterPressed)
-        end)
-        
-        textbox.Input = inputBox
-        table.insert(self.Elements, textbox)
-        return textbox
-    end
-    
-    -- Selecionar primeira tab automaticamente
+    -- Selecionar primeira aba automaticamente
     if #self.Tabs == 0 then
         self:SelectTab(tab.Name)
     end
@@ -1157,11 +906,11 @@ end
 function Window:SelectTab(tabName)
     for _, tab in ipairs(self.Tabs) do
         if tab.Name == tabName then
-            tab.Frame.Visible = true
+            tab.Content.Visible = true
             tab.Button.Active = true
             Tween(tab.Button, {BackgroundColor3 = GhostlyBush.Themes[self.Theme].Accent}, 0.2)
         else
-            tab.Frame.Visible = false
+            tab.Content.Visible = false
             tab.Button.Active = false
             Tween(tab.Button, {BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary}, 0.2)
         end
@@ -1169,22 +918,25 @@ function Window:SelectTab(tabName)
 end
 
 function Window:Destroy()
-    self.ScreenGui:Destroy()
-    for _, conn in ipairs(self.Elements) do
-        if typeof(conn) == "RBXScriptConnection" then
-            conn:Disconnect()
+    if self.ScreenGui then
+        self.ScreenGui:Destroy()
+    end
+    
+    for _, connection in ipairs(self.Elements) do
+        if typeof(connection) == "RBXScriptConnection" then
+            connection:Disconnect()
         end
     end
     
-    for i, win in ipairs(GhostlyBush.Windows) do
-        if win == self then
+    for i, window in ipairs(GhostlyBush.Windows) do
+        if window == self then
             table.remove(GhostlyBush.Windows, i)
             break
         end
     end
 end
 
--- Métodos principais da biblioteca
+-- Métodos da biblioteca
 function GhostlyBush:CreateWindow(config)
     return Window.new(config)
 end
@@ -1196,12 +948,15 @@ end
 function GhostlyBush:SetTheme(name)
     if self.Themes[name] then
         self.CurrentTheme = name
-        -- Aqui você implementaria a atualização das cores em todas as janelas
+        -- Atualizar cores de todas as janelas abertas
+        for _, window in ipairs(self.Windows) do
+            -- Aqui você implementaria a atualização das cores
+        end
     end
 end
 
-function GhostlyBush:GetTheme()
-    return self.Themes[self.CurrentTheme]
+function GhostlyBush:GetTheme(name)
+    return self.Themes[name or self.CurrentTheme]
 end
 
 function GhostlyBush:DestroyAll()
@@ -1211,7 +966,7 @@ function GhostlyBush:DestroyAll()
     self.Windows = {}
 end
 
--- Exportar funções globais
+-- Exportar globalmente
 _G.GhostlyBush = GhostlyBush
 
 return GhostlyBush
