@@ -1,6 +1,6 @@
--- GhostlyBush Library v2.0 (Interface Aprimorada)
+-- GhostlyBush Library v3.0 (Completa com Configurações Nativas)
 -- Por: MTS13GAMER
--- Interface moderna com arraste, minimizar e fechar
+-- Interface moderna com configurações nativas e suporte mobile
 
 -- Serviços do Roblox
 local TweenService = game:GetService("TweenService")
@@ -9,6 +9,12 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
+local GuiService = game:GetService("GuiService")
+local TextService = game:GetService("TextService")
+
+-- Detectar se é mobile
+local IS_MOBILE = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+local IS_DESKTOP = not IS_MOBILE
 
 -- Função utilitária para criar instâncias
 local function Create(class, properties)
@@ -42,32 +48,40 @@ end
 
 -- Biblioteca principal
 local GhostlyBush = {
-    Version = "2.0.0",
+    Version = "3.0.0",
     Themes = {},
     CurrentTheme = "Dark",
-    Windows = {}
+    Windows = {},
+    Config = {
+        MobileAutoSize = false,  -- Redimensionamento automático para mobile
+        DefaultCloseKey = Enum.KeyCode.RightControl,
+        AnimationSpeed = 0.2,
+        EnableTooltips = true
+    }
 }
 
--- Configurações padrão
-local DefaultConfig = {
+-- Configurações padrão da janela
+local DefaultWindowConfig = {
     Title = "GhostlyBush Window",
-    Icon = "rbxassetid://6031094667", -- Ícone padrão do Roblox
+    Icon = "rbxassetid://6031094667",
     Author = "GhostlyBush",
-    Size = UDim2.fromOffset(600, 450),
-    MinSize = Vector2.new(500, 350),
-    MaxSize = Vector2.new(800, 600),
+    Size = IS_MOBILE and UDim2.fromOffset(400, 500) or UDim2.fromOffset(650, 500),
+    MinSize = IS_MOBILE and Vector2.new(350, 400) or Vector2.new(500, 400),
+    MaxSize = IS_MOBILE and Vector2.new(450, 600) or Vector2.new(800, 600),
     Position = UDim2.fromScale(0.5, 0.5),
     Transparent = false,
     Theme = "Dark",
     Draggable = true,
     Resizable = true,
-    SideBarWidth = 220,
+    SideBarWidth = IS_MOBILE and 180 or 220,
     BackgroundImageTransparency = 0.5,
     HideSearchBar = false,
     ScrollBarEnabled = true,
-    CloseKey = Enum.KeyCode.RightControl,
-    AnimationSpeed = 0.2,
-    BlurBackground = false
+    CloseKey = GhostlyBush.Config.DefaultCloseKey,
+    ShowConfigButton = true,  -- Mostrar botão de configurações
+    AutoMobileSize = false,   -- Redimensionamento automático para mobile
+    MobileScale = 0.85,       -- Escala para mobile
+    EnableAnimations = true
 }
 
 -- Tema Dark aprimorado
@@ -84,7 +98,8 @@ GhostlyBush.Themes.Dark = {
     Hover = Color3.fromRGB(50, 50, 55),
     Pressed = Color3.fromRGB(35, 35, 40),
     Shadow = Color3.fromRGB(0, 0, 0),
-    Tooltip = Color3.fromRGB(50, 50, 55)
+    Tooltip = Color3.fromRGB(50, 50, 55),
+    TitleBar = Color3.fromRGB(25, 25, 30)
 }
 
 -- Tema Light
@@ -101,7 +116,26 @@ GhostlyBush.Themes.Light = {
     Hover = Color3.fromRGB(220, 220, 220),
     Pressed = Color3.fromRGB(200, 200, 200),
     Shadow = Color3.fromRGB(0, 0, 0, 0.3),
-    Tooltip = Color3.fromRGB(250, 250, 250)
+    Tooltip = Color3.fromRGB(250, 250, 250),
+    TitleBar = Color3.fromRGB(220, 220, 225)
+}
+
+-- Tema Purple
+GhostlyBush.Themes.Purple = {
+    Main = Color3.fromRGB(40, 30, 50),
+    Secondary = Color3.fromRGB(50, 40, 60),
+    Accent = Color3.fromRGB(170, 100, 255),
+    Text = Color3.fromRGB(240, 240, 240),
+    SubText = Color3.fromRGB(200, 180, 220),
+    Outline = Color3.fromRGB(70, 60, 80),
+    Success = Color3.fromRGB(45, 180, 45),
+    Warning = Color3.fromRGB(255, 160, 0),
+    Error = Color3.fromRGB(220, 60, 60),
+    Hover = Color3.fromRGB(60, 50, 70),
+    Pressed = Color3.fromRGB(45, 35, 55),
+    Shadow = Color3.fromRGB(0, 0, 0),
+    Tooltip = Color3.fromRGB(60, 50, 70),
+    TitleBar = Color3.fromRGB(35, 25, 45)
 }
 
 -- Classe Window
@@ -112,18 +146,20 @@ function Window.new(config)
     local self = setmetatable({}, Window)
     
     -- Mesclar configurações com padrões
-    for key, value in pairs(DefaultConfig) do
+    for key, value in pairs(DefaultWindowConfig) do
         self[key] = config[key] or value
     end
     
     -- Configurações específicas
-    self.Title = config.Title or DefaultConfig.Title
-    self.Icon = config.Icon or DefaultConfig.Icon
-    self.Author = config.Author or DefaultConfig.Author
+    self.Title = config.Title or DefaultWindowConfig.Title
+    self.Icon = config.Icon or DefaultWindowConfig.Icon
+    self.Author = config.Author or DefaultWindowConfig.Author
     self.Folder = config.Folder or "GhostlyBushConfig"
     self.Background = config.Background
     self.User = config.User or {Enabled = false}
     self.KeySystem = config.KeySystem
+    self.AutoMobileSize = config.AutoMobileSize or GhostlyBush.Config.MobileAutoSize
+    self.ShowConfigButton = config.ShowConfigButton == nil and true or config.ShowConfigButton
     
     -- Estado
     self.Tabs = {}
@@ -134,6 +170,20 @@ function Window.new(config)
     self.Dragging = false
     self.DragStart = nil
     self.DragStartPosition = nil
+    self.ConfigOpen = false
+    
+    -- Configurações personalizadas
+    self.CustomConfig = {
+        CloseKey = self.CloseKey,
+        Draggable = self.Draggable,
+        MobileScale = self.MobileScale,
+        EnableAnimations = self.EnableAnimations
+    }
+    
+    -- Ajustar para mobile se necessário
+    if self.AutoMobileSize and IS_MOBILE then
+        self:AdjustForMobile()
+    end
     
     -- Criar UI
     self:CreateUI()
@@ -142,6 +192,34 @@ function Window.new(config)
     table.insert(GhostlyBush.Windows, self)
     
     return self
+end
+
+function Window:AdjustForMobile()
+    -- Redimensionar para mobile
+    local viewportSize = workspace.CurrentCamera.ViewportSize
+    local scale = self.MobileScale or 0.85
+    
+    self.Size = UDim2.new(
+        self.Size.X.Scale,
+        self.Size.X.Offset * scale,
+        self.Size.Y.Scale,
+        self.Size.Y.Offset * scale
+    )
+    
+    self.MinSize = Vector2.new(
+        self.MinSize.X * scale,
+        self.MinSize.Y * scale
+    )
+    
+    self.MaxSize = Vector2.new(
+        self.MaxSize.X * scale,
+        self.MaxSize.Y * scale
+    )
+    
+    self.SideBarWidth = math.floor(self.SideBarWidth * scale)
+    
+    -- Ajustar posição
+    self.Position = UDim2.fromScale(0.5, 0.5)
 end
 
 function Window:CreateUI()
@@ -191,7 +269,7 @@ function Window:CreateUI()
     self.TopBar = Create("Frame", {
         Name = "TopBar",
         Size = UDim2.new(1, 0, 0, 45),
-        BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary,
+        BackgroundColor3 = GhostlyBush.Themes[self.Theme].TitleBar,
         BorderSizePixel = 0,
         Parent = self.MainFrame
     })
@@ -206,7 +284,7 @@ function Window:CreateUI()
     local topBarMask = Create("Frame", {
         Size = UDim2.new(1, 0, 1, 12),
         Position = UDim2.new(0, 0, 1, -12),
-        BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary,
+        BackgroundColor3 = GhostlyBush.Themes[self.Theme].TitleBar,
         BorderSizePixel = 0,
         Parent = self.TopBar
     })
@@ -226,7 +304,7 @@ function Window:CreateUI()
     -- Título
     self.TitleLabel = Create("TextLabel", {
         Name = "TitleLabel",
-        Size = UDim2.new(1, -150, 1, 0),
+        Size = UDim2.new(1, -180, 1, 0),
         Position = UDim2.new(0, 50, 0, 0),
         BackgroundTransparency = 1,
         Text = self.Title,
@@ -241,45 +319,95 @@ function Window:CreateUI()
     -- Controles da janela
     local controlsFrame = Create("Frame", {
         Name = "Controls",
-        Size = UDim2.new(0, 105, 1, 0),
-        Position = UDim2.new(1, -110, 0, 0),
+        Size = UDim2.new(0, self.ShowConfigButton and 140 or 105, 1, 0),
+        Position = UDim2.new(1, - (self.ShowConfigButton and 145 or 110), 0, 0),
         BackgroundTransparency = 1,
         Parent = self.TopBar
     })
     
-    -- Botão minimizar
-    self.MinimizeButton = Create("TextButton", {
-        Name = "MinimizeButton",
-        Size = UDim2.new(0, 30, 0, 30),
-        Position = UDim2.new(0, 0, 0.5, 0),
-        AnchorPoint = Vector2.new(0, 0.5),
-        BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary,
-        Text = "_",
-        TextColor3 = GhostlyBush.Themes[self.Theme].Text,
-        TextSize = 20,
-        Font = Enum.Font.GothamBold,
-        AutoButtonColor = false,
-        Parent = controlsFrame
-    })
+    -- Botão de configurações (ícone :)
+    if self.ShowConfigButton then
+        self.ConfigButton = Create("TextButton", {
+            Name = "ConfigButton",
+            Size = UDim2.new(0, 30, 0, 30),
+            Position = UDim2.new(0, 0, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary,
+            Text = ":",
+            TextColor3 = GhostlyBush.Themes[self.Theme].Text,
+            TextSize = 18,
+            Font = Enum.Font.GothamBold,
+            AutoButtonColor = false,
+            Parent = controlsFrame
+        })
+        
+        local configCorner = Create("UICorner", {
+            CornerRadius = UDim.new(1, 0),
+            Parent = self.ConfigButton
+        end)
+        
+        -- Ajustar posição dos outros botões
+        self.MinimizeButton = Create("TextButton", {
+            Name = "MinimizeButton",
+            Size = UDim2.new(0, 30, 0, 30),
+            Position = UDim2.new(0, 35, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary,
+            Text = "_",
+            TextColor3 = GhostlyBush.Themes[self.Theme].Text,
+            TextSize = 20,
+            Font = Enum.Font.GothamBold,
+            AutoButtonColor = false,
+            Parent = controlsFrame
+        })
+        
+        self.CloseButton = Create("TextButton", {
+            Name = "CloseButton",
+            Size = UDim2.new(0, 30, 0, 30),
+            Position = UDim2.new(1, -35, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundColor3 = GhostlyBush.Themes[self.Theme].Error,
+            Text = "×",
+            TextColor3 = Color3.new(1, 1, 1),
+            TextSize = 24,
+            Font = Enum.Font.GothamBold,
+            AutoButtonColor = false,
+            Parent = controlsFrame
+        })
+    else
+        self.MinimizeButton = Create("TextButton", {
+            Name = "MinimizeButton",
+            Size = UDim2.new(0, 30, 0, 30),
+            Position = UDim2.new(0, 0, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary,
+            Text = "_",
+            TextColor3 = GhostlyBush.Themes[self.Theme].Text,
+            TextSize = 20,
+            Font = Enum.Font.GothamBold,
+            AutoButtonColor = false,
+            Parent = controlsFrame
+        })
+        
+        self.CloseButton = Create("TextButton", {
+            Name = "CloseButton",
+            Size = UDim2.new(0, 30, 0, 30),
+            Position = UDim2.new(1, -35, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundColor3 = GhostlyBush.Themes[self.Theme].Error,
+            Text = "×",
+            TextColor3 = Color3.new(1, 1, 1),
+            TextSize = 24,
+            Font = Enum.Font.GothamBold,
+            AutoButtonColor = false,
+            Parent = controlsFrame
+        })
+    end
     
+    -- Arredondar botões
     local minimizeCorner = Create("UICorner", {
         CornerRadius = UDim.new(1, 0),
         Parent = self.MinimizeButton
-    })
-    
-    -- Botão fechar (X)
-    self.CloseButton = Create("TextButton", {
-        Name = "CloseButton",
-        Size = UDim2.new(0, 30, 0, 30),
-        Position = UDim2.new(1, -35, 0.5, 0),
-        AnchorPoint = Vector2.new(0, 0.5),
-        BackgroundColor3 = GhostlyBush.Themes[self.Theme].Error,
-        Text = "×",
-        TextColor3 = Color3.new(1, 1, 1),
-        TextSize = 24,
-        Font = Enum.Font.GothamBold,
-        AutoButtonColor = false,
-        Parent = controlsFrame
     })
     
     local closeCorner = Create("UICorner", {
@@ -343,15 +471,18 @@ function Window:CreateUI()
     })
     
     -- Configurar arraste da janela
-    if self.Draggable then
-        self:SetupDragging()
-    end
+    self:SetupDragging()
     
     -- Configurar efeitos hover nos botões
     self:SetupButtonEffects()
     
     -- Configurar eventos dos botões
     self:SetupButtonEvents()
+    
+    -- Configurar menu de configurações
+    if self.ShowConfigButton then
+        self:CreateConfigMenu()
+    end
     
     -- Configurar parentes
     shadow.Parent = self.MainFrame
@@ -361,12 +492,308 @@ function Window:CreateUI()
     return self
 end
 
+function Window:CreateConfigMenu()
+    -- Menu de configurações
+    self.ConfigMenu = Create("Frame", {
+        Name = "ConfigMenu",
+        Size = UDim2.new(0, 300, 0, 400),
+        Position = UDim2.new(1, 10, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary,
+        BorderSizePixel = 0,
+        Visible = false,
+        Parent = self.MainFrame
+    })
+    
+    Create("UICorner", {
+        CornerRadius = UDim.new(0, 8),
+        Parent = self.ConfigMenu
+    })
+    
+    -- Shadow do menu
+    Create("ImageLabel", {
+        Name = "MenuShadow",
+        Size = UDim2.new(1, 10, 1, 10),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://1316045217",
+        ImageColor3 = GhostlyBush.Themes[self.Theme].Shadow,
+        ImageTransparency = 0.8,
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(10, 10, 118, 118),
+        ZIndex = -1,
+        Parent = self.ConfigMenu
+    })
+    
+    -- Título do menu
+    local menuTitle = Create("TextLabel", {
+        Name = "Title",
+        Size = UDim2.new(1, -20, 0, 40),
+        Position = UDim2.new(0, 10, 0, 10),
+        BackgroundTransparency = 1,
+        Text = "Configurações",
+        TextColor3 = GhostlyBush.Themes[self.Theme].Text,
+        TextSize = 18,
+        Font = Enum.Font.GothamSemibold,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = self.ConfigMenu
+    })
+    
+    -- Container de opções
+    local optionsContainer = Create("ScrollingFrame", {
+        Name = "OptionsContainer",
+        Size = UDim2.new(1, -20, 1, -60),
+        Position = UDim2.new(0, 10, 0, 50),
+        BackgroundTransparency = 1,
+        ScrollBarThickness = 5,
+        ScrollBarImageColor3 = GhostlyBush.Themes[self.Theme].Accent,
+        Parent = self.ConfigMenu
+    })
+    
+    local optionsLayout = Create("UIListLayout", {
+        Parent = optionsContainer,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 10)
+    })
+    
+    Create("UIPadding", {
+        Parent = optionsContainer,
+        PaddingTop = UDim.new(0, 5),
+        PaddingBottom = UDim.new(0, 5)
+    })
+    
+    -- Lista de teclas
+    local keyOptions = {
+        "RightControl", "LeftControl", "RightShift", "LeftShift", 
+        "F1", "F2", "F3", "F4", "Insert", "Delete", "End", "Home"
+    }
+    
+    -- Adicionar opções
+    local yOffset = 0
+    
+    -- Tecla de fechar
+    local closeKeyFrame = Create("Frame", {
+        Name = "CloseKeyOption",
+        Size = UDim2.new(1, 0, 0, 60),
+        BackgroundTransparency = 1,
+        LayoutOrder = 1,
+        Parent = optionsContainer
+    })
+    
+    local closeKeyLabel = Create("TextLabel", {
+        Name = "Label",
+        Size = UDim2.new(1, 0, 0, 20),
+        BackgroundTransparency = 1,
+        Text = "Tecla para fechar:",
+        TextColor3 = GhostlyBush.Themes[self.Theme].Text,
+        TextSize = 14,
+        Font = Enum.Font.Gotham,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = closeKeyFrame
+    })
+    
+    local closeKeyDropdown = Create("TextButton", {
+        Name = "Dropdown",
+        Size = UDim2.new(1, 0, 0, 35),
+        Position = UDim2.new(0, 0, 0, 25),
+        BackgroundColor3 = GhostlyBush.Themes[self.Theme].Main,
+        Text = tostring(self.CustomConfig.CloseKey):gsub("Enum.KeyCode.", ""),
+        TextColor3 = GhostlyBush.Themes[self.Theme].Text,
+        TextSize = 14,
+        Font = Enum.Font.Gotham,
+        Parent = closeKeyFrame
+    })
+    
+    Create("UICorner", {
+        CornerRadius = UDim.new(0, 6),
+        Parent = closeKeyDropdown
+    })
+    
+    -- Dropdown de teclas
+    local keysDropdown = Create("ScrollingFrame", {
+        Name = "KeysDropdown",
+        Size = UDim2.new(1, 0, 0, 0),
+        Position = UDim2.new(0, 0, 1, 5),
+        BackgroundColor3 = GhostlyBush.Themes[self.Theme].Main,
+        Visible = false,
+        ScrollBarThickness = 5,
+        ScrollBarImageColor3 = GhostlyBush.Themes[self.Theme].Accent,
+        Parent = closeKeyFrame
+    })
+    
+    Create("UICorner", {
+        CornerRadius = UDim.new(0, 6),
+        Parent = keysDropdown
+    })
+    
+    local keysLayout = Create("UIListLayout", {
+        Parent = keysDropdown,
+        SortOrder = Enum.SortOrder.LayoutOrder
+    })
+    
+    -- Preencher dropdown
+    for _, keyName in ipairs(keyOptions) do
+        local keyButton = Create("TextButton", {
+            Size = UDim2.new(1, -10, 0, 30),
+            Position = UDim2.new(0.5, 0, 0, 0),
+            AnchorPoint = Vector2.new(0.5, 0),
+            BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary,
+            Text = keyName,
+            TextColor3 = GhostlyBush.Themes[self.Theme].Text,
+            TextSize = 14,
+            Font = Enum.Font.Gotham,
+            LayoutOrder = #keysDropdown:GetChildren(),
+            Parent = keysDropdown
+        })
+        
+        Create("UICorner", {
+            CornerRadius = UDim.new(0, 4),
+            Parent = keyButton
+        })
+        
+        keyButton.MouseButton1Click:Connect(function()
+            self.CustomConfig.CloseKey = Enum.KeyCode[keyName]
+            closeKeyDropdown.Text = keyName
+            
+            -- Remover conexão antiga
+            for _, conn in ipairs(self.Connections) do
+                if conn.Name == "CloseKeyConnection" then
+                    conn:Disconnect()
+                    break
+                end
+            end
+            
+            -- Adicionar nova conexão
+            local newConnection = UserInputService.InputBegan:Connect(function(input, processed)
+                if not processed and input.KeyCode == self.CustomConfig.CloseKey then
+                    self:Destroy()
+                end
+            end)
+            newConnection.Name = "CloseKeyConnection"
+            table.insert(self.Connections, newConnection)
+            
+            keysDropdown.Visible = false
+            keysDropdown.Size = UDim2.new(1, 0, 0, 0)
+        end)
+    end
+    
+    closeKeyDropdown.MouseButton1Click:Connect(function()
+        keysDropdown.Visible = not keysDropdown.Visible
+        if keysDropdown.Visible then
+            keysDropdown.Size = UDim2.new(1, 0, 0, math.min(#keyOptions * 35, 150))
+        else
+            keysDropdown.Size = UDim2.new(1, 0, 0, 0)
+        end
+    end)
+    
+    -- Toggle para arrastar
+    local dragToggleFrame = Create("Frame", {
+        Name = "DragToggle",
+        Size = UDim2.new(1, 0, 0, 40),
+        BackgroundTransparency = 1,
+        LayoutOrder = 2,
+        Parent = optionsContainer
+    })
+    
+    local dragLabel = Create("TextLabel", {
+        Name = "Label",
+        Size = UDim2.new(1, -50, 1, 0),
+        BackgroundTransparency = 1,
+        Text = "Arrastar janela",
+        TextColor3 = GhostlyBush.Themes[self.Theme].Text,
+        TextSize = 14,
+        Font = Enum.Font.Gotham,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = dragToggleFrame
+    })
+    
+    local dragToggleButton = Create("TextButton", {
+        Name = "Toggle",
+        Size = UDim2.new(0, 40, 0, 20),
+        Position = UDim2.new(1, -40, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        BackgroundColor3 = self.CustomConfig.Draggable and GhostlyBush.Themes[self.Theme].Accent or GhostlyBush.Themes[self.Theme].Secondary,
+        Text = "",
+        AutoButtonColor = false,
+        Parent = dragToggleFrame
+    })
+    
+    Create("UICorner", {
+        CornerRadius = UDim.new(1, 0),
+        Parent = dragToggleButton
+    })
+    
+    local dragToggleCircle = Create("Frame", {
+        Name = "Circle",
+        Size = UDim2.new(0, 14, 0, 14),
+        Position = UDim2.new(self.CustomConfig.Draggable and 1 or 0, self.CustomConfig.Draggable and -17 or 3, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        BackgroundColor3 = Color3.new(1, 1, 1),
+        Parent = dragToggleButton
+    })
+    
+    Create("UICorner", {
+        CornerRadius = UDim.new(1, 0),
+        Parent = dragToggleCircle
+    })
+    
+    dragToggleButton.MouseButton1Click:Connect(function()
+        self.CustomConfig.Draggable = not self.CustomConfig.Draggable
+        
+        if self.CustomConfig.Draggable then
+            Tween(dragToggleButton, {BackgroundColor3 = GhostlyBush.Themes[self.Theme].Accent}, 0.2)
+            Tween(dragToggleCircle, {Position = UDim2.new(1, -17, 0.5, 0)}, 0.2)
+            self:SetupDragging()
+        else
+            Tween(dragToggleButton, {BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary}, 0.2)
+            Tween(dragToggleCircle, {Position = UDim2.new(0, 3, 0.5, 0)}, 0.2)
+            self:RemoveDragging()
+        end
+    end)
+    
+    -- Botão de salvar
+    local saveButton = Create("TextButton", {
+        Name = "SaveButton",
+        Size = UDim2.new(1, -20, 0, 40),
+        Position = UDim2.new(0, 10, 1, -50),
+        BackgroundColor3 = GhostlyBush.Themes[self.Theme].Accent,
+        Text = "Aplicar Configurações",
+        TextColor3 = Color3.new(1, 1, 1),
+        TextSize = 14,
+        Font = Enum.Font.GothamSemibold,
+        Parent = self.ConfigMenu
+    })
+    
+    Create("UICorner", {
+        CornerRadius = UDim.new(0, 8),
+        Parent = saveButton
+    })
+    
+    saveButton.MouseButton1Click:Connect(function()
+        self.ConfigMenu.Visible = false
+    end)
+    
+    -- Ajustar tamanho do container
+    optionsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        optionsContainer.CanvasSize = UDim2.new(0, 0, 0, optionsLayout.AbsoluteContentSize.Y + 10)
+    end)
+end
+
 function Window:SetupDragging()
+    -- Remover arraste anterior se existir
+    self:RemoveDragging()
+    
+    if not self.CustomConfig.Draggable then return end
+    
     local topBar = self.TopBar
     
     local dragStart, startPos
     
     local function updateDrag(input)
+        -- Não arrastar se minimizado
+        if self.Minimized then return end
+        
         local delta = input.Position - dragStart
         local newPosition = UDim2.new(
             startPos.X.Scale, 
@@ -392,7 +819,7 @@ function Window:SetupDragging()
     
     -- Mouse/Desktop
     local connection1 = topBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and not self.Minimized then
             dragStart = input.Position
             startPos = self.MainFrame.Position
             self.Dragging = true
@@ -404,6 +831,7 @@ function Window:SetupDragging()
                 end
             end)
             
+            connection.Name = "DragConnection"
             table.insert(self.Connections, connection)
         end
     end)
@@ -416,7 +844,7 @@ function Window:SetupDragging()
     
     -- Toque/Mobile
     local connection3 = topBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch then
+        if input.UserInputType == Enum.UserInputType.Touch and not self.Minimized then
             dragStart = input.Position
             startPos = self.MainFrame.Position
             self.Dragging = true
@@ -429,13 +857,56 @@ function Window:SetupDragging()
         end
     end)
     
+    connection1.Name = "DragBeginConnection"
+    connection2.Name = "DragEndConnection"
+    connection3.Name = "TouchBeginConnection"
+    connection4.Name = "TouchEndConnection"
+    
     table.insert(self.Connections, connection1)
     table.insert(self.Connections, connection2)
     table.insert(self.Connections, connection3)
     table.insert(self.Connections, connection4)
 end
 
+function Window:RemoveDragging()
+    -- Remover conexões de arraste
+    local toRemove = {}
+    for i, conn in ipairs(self.Connections) do
+        if conn.Name and (conn.Name:find("Drag") or conn.Name:find("Touch")) then
+            conn:Disconnect()
+            table.insert(toRemove, i)
+        end
+    end
+    
+    -- Remover em ordem reversa
+    for i = #toRemove, 1, -1 do
+        table.remove(self.Connections, toRemove[i])
+    end
+end
+
 function Window:SetupButtonEffects()
+    -- Efeitos do botão de configurações
+    if self.ConfigButton then
+        self.ConfigButton.MouseEnter:Connect(function()
+            Tween(self.ConfigButton, {
+                BackgroundColor3 = GhostlyBush.Themes[self.Theme].Hover,
+                Size = UDim2.new(0, 32, 0, 32)
+            }, 0.15)
+        end)
+        
+        self.ConfigButton.MouseLeave:Connect(function()
+            Tween(self.ConfigButton, {
+                BackgroundColor3 = GhostlyBush.Themes[self.Theme].Secondary,
+                Size = UDim2.new(0, 30, 0, 30)
+            }, 0.15)
+        end)
+        
+        self.ConfigButton.MouseButton1Click:Connect(function()
+            self.ConfigOpen = not self.ConfigOpen
+            self.ConfigMenu.Visible = self.ConfigOpen
+        end)
+    end
+    
     -- Efeitos do botão minimizar
     self.MinimizeButton.MouseEnter:Connect(function()
         Tween(self.MinimizeButton, {
@@ -508,10 +979,11 @@ function Window:SetupButtonEvents()
     
     -- Tecla de fechar
     local closeConnection = UserInputService.InputBegan:Connect(function(input, processed)
-        if not processed and input.KeyCode == self.CloseKey then
+        if not processed and input.KeyCode == self.CustomConfig.CloseKey then
             self:Destroy()
         end
     end)
+    closeConnection.Name = "CloseKeyConnection"
     table.insert(self.Connections, closeConnection)
 end
 
@@ -637,7 +1109,7 @@ function Window:CreateTab(options)
     tab.Content = tabContent
     tab.ActiveIndicator = activeIndicator
     
-    -- Métodos da aba
+    -- Métodos da aba CORRIGIDOS
     function tab:CreateSection(options)
         local section = {
             Name = options.Name or "Section",
@@ -701,6 +1173,14 @@ function Window:CreateTab(options)
             Padding = UDim.new(0, 8)
         })
         
+        Create("UIPadding", {
+            Parent = section.Content,
+            PaddingTop = UDim.new(0, 5),
+            PaddingLeft = UDim.new(0, 5),
+            PaddingRight = UDim.new(0, 5),
+            PaddingBottom = UDim.new(0, 5)
+        })
+        
         contentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
             if not section.Collapsed then
                 sectionFrame.Size = UDim2.new(1, 0, 0, 40 + contentList.AbsoluteContentSize.Y + 16)
@@ -757,8 +1237,57 @@ function Window:CreateTab(options)
         end
         
         section.Frame = sectionFrame
+        section.ContentFrame = section.Content
         table.insert(self.Elements, section)
         return section
+    end
+    
+    function tab:CreateTitleTab(options)
+        local titleTab = {
+            Text = options.Text or "Title",
+            Color = options.Color or GhostlyBush.Themes[GhostlyBush.CurrentTheme].Accent
+        }
+        
+        local parent = options.Section and options.Section.ContentFrame or self.Content
+        local layoutOrder = options.LayoutOrder or #self.Elements + 1
+        
+        local titleFrame = Create("Frame", {
+            Name = "TitleTab_" .. titleTab.Text,
+            Size = UDim2.new(1, 0, 0, 30),
+            BackgroundTransparency = 1,
+            LayoutOrder = layoutOrder,
+            Parent = parent
+        })
+        
+        local titleLabel = Create("TextLabel", {
+            Name = "Label",
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Text = titleTab.Text,
+            TextColor3 = titleTab.Color,
+            TextSize = 16,
+            Font = Enum.Font.GothamBold,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = titleFrame
+        })
+        
+        local underline = Create("Frame", {
+            Name = "Underline",
+            Size = UDim2.new(0.3, 0, 0, 2),
+            Position = UDim2.new(0, 0, 1, -2),
+            BackgroundColor3 = titleTab.Color,
+            BorderSizePixel = 0,
+            Parent = titleFrame
+        })
+        
+        Create("UICorner", {
+            CornerRadius = UDim.new(1, 0),
+            Parent = underline
+        })
+        
+        titleTab.Frame = titleFrame
+        table.insert(self.Elements, titleTab)
+        return titleTab
     end
     
     function tab:CreateButton(options)
@@ -767,7 +1296,7 @@ function Window:CreateTab(options)
             Callback = options.Callback or function() end
         }
         
-        local parent = options.Section and options.Section.Content or self.Content
+        local parent = options.Section and options.Section.ContentFrame or self.Content
         local layoutOrder = options.LayoutOrder or #self.Elements + 1
         
         local buttonFrame = Create("TextButton", {
@@ -821,7 +1350,7 @@ function Window:CreateTab(options)
             Value = options.Default or false
         }
         
-        local parent = options.Section and options.Section.Content or self.Content
+        local parent = options.Section and options.Section.ContentFrame or self.Content
         local layoutOrder = options.LayoutOrder or #self.Elements + 1
         
         local toggleFrame = Create("Frame", {
@@ -965,6 +1494,12 @@ function Window:Minimize()
         }, 0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
         
         self.MinimizeButton.Text = "+"
+        
+        -- Esconder menu de configurações se aberto
+        if self.ConfigMenu and self.ConfigMenu.Visible then
+            self.ConfigMenu.Visible = false
+            self.ConfigOpen = false
+        end
     else
         -- Restaurar tamanho original
         Tween(self.MainFrame, {
@@ -1014,6 +1549,16 @@ end
 
 function GhostlyBush:GetTheme(name)
     return self.Themes[name or self.CurrentTheme]
+end
+
+function GhostlyBush:SetConfig(key, value)
+    if self.Config[key] ~= nil then
+        self.Config[key] = value
+    end
+end
+
+function GhostlyBush:GetConfig(key)
+    return self.Config[key]
 end
 
 function GhostlyBush:DestroyAll()
