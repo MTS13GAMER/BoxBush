@@ -53,7 +53,7 @@ local GhostlyBush = {
     CurrentTheme = "Dark",
     Windows = {},
     Config = {
-        MobileAutoSize = false,  -- Redimensionamento automático para mobile
+        MobileAutoSize = false,
         DefaultCloseKey = Enum.KeyCode.RightControl,
         AnimationSpeed = 0.2,
         EnableTooltips = true
@@ -77,10 +77,10 @@ local DefaultWindowConfig = {
     BackgroundImageTransparency = 0.5,
     HideSearchBar = false,
     ScrollBarEnabled = true,
-    CloseKey = GhostlyBush.Config.DefaultCloseKey,
-    ShowConfigButton = true,  -- Mostrar botão de configurações
-    AutoMobileSize = false,   -- Redimensionamento automático para mobile
-    MobileScale = 0.85,       -- Escala para mobile
+    CloseKey = Enum.KeyCode.RightControl,
+    ShowConfigButton = true,
+    AutoMobileSize = false,
+    MobileScale = 0.85,
     EnableAnimations = true
 }
 
@@ -195,7 +195,6 @@ function Window.new(config)
 end
 
 function Window:AdjustForMobile()
-    -- Redimensionar para mobile
     local viewportSize = workspace.CurrentCamera.ViewportSize
     local scale = self.MobileScale or 0.85
     
@@ -218,7 +217,6 @@ function Window:AdjustForMobile()
     
     self.SideBarWidth = math.floor(self.SideBarWidth * scale)
     
-    -- Ajustar posição
     self.Position = UDim2.fromScale(0.5, 0.5)
 end
 
@@ -244,7 +242,7 @@ function Window:CreateUI()
         Selectable = true
     })
     
-    -- Sombreamento elegante
+    -- Sombreamento
     local shadow = Create("ImageLabel", {
         Name = "Shadow",
         Size = UDim2.new(1, 20, 1, 20),
@@ -259,13 +257,13 @@ function Window:CreateUI()
         ZIndex = -1
     })
     
-    -- Arredondamento do frame principal
+    -- Arredondamento
     local corner = Create("UICorner", {
         CornerRadius = UDim.new(0, 12),
         Parent = self.MainFrame
     })
     
-    -- Barra superior aprimorada
+    -- Barra superior
     self.TopBar = Create("Frame", {
         Name = "TopBar",
         Size = UDim2.new(1, 0, 0, 45),
@@ -274,13 +272,11 @@ function Window:CreateUI()
         Parent = self.MainFrame
     })
     
-    -- Arredondar apenas os cantos superiores
     local topBarCorner = Create("UICorner", {
         CornerRadius = UDim.new(0, 12),
         Parent = self.TopBar
     })
     
-    -- Ajustar o corner para arredondar apenas o topo
     local topBarMask = Create("Frame", {
         Size = UDim2.new(1, 0, 1, 12),
         Position = UDim2.new(0, 0, 1, -12),
@@ -325,7 +321,7 @@ function Window:CreateUI()
         Parent = self.TopBar
     })
     
-    -- Botão de configurações (ícone :)
+    -- Botão de configurações
     if self.ShowConfigButton then
         self.ConfigButton = Create("TextButton", {
             Name = "ConfigButton",
@@ -344,9 +340,8 @@ function Window:CreateUI()
         local configCorner = Create("UICorner", {
             CornerRadius = UDim.new(1, 0),
             Parent = self.ConfigButton
-        end)
+        })
         
-        -- Ajustar posição dos outros botões
         self.MinimizeButton = Create("TextButton", {
             Name = "MinimizeButton",
             Size = UDim2.new(0, 30, 0, 30),
@@ -415,7 +410,7 @@ function Window:CreateUI()
         Parent = self.CloseButton
     })
     
-    -- Sidebar elegante
+    -- Sidebar
     self.SideBar = Create("Frame", {
         Name = "SideBar",
         Size = UDim2.new(0, self.SideBarWidth, 1, -45),
@@ -487,7 +482,11 @@ function Window:CreateUI()
     -- Configurar parentes
     shadow.Parent = self.MainFrame
     self.MainFrame.Parent = self.ScreenGui
-    self.ScreenGui.Parent = CoreGui
+    
+    -- Parentear no CoreGui (corrigido)
+    pcall(function()
+        self.ScreenGui.Parent = CoreGui
+    end)
     
     return self
 end
@@ -568,9 +567,6 @@ function Window:CreateConfigMenu()
         "RightControl", "LeftControl", "RightShift", "LeftShift", 
         "F1", "F2", "F3", "F4", "Insert", "Delete", "End", "Home"
     }
-    
-    -- Adicionar opções
-    local yOffset = 0
     
     -- Tecla de fechar
     local closeKeyFrame = Create("Frame", {
@@ -781,7 +777,6 @@ function Window:CreateConfigMenu()
 end
 
 function Window:SetupDragging()
-    -- Remover arraste anterior se existir
     self:RemoveDragging()
     
     if not self.CustomConfig.Draggable then return end
@@ -791,7 +786,6 @@ function Window:SetupDragging()
     local dragStart, startPos
     
     local function updateDrag(input)
-        -- Não arrastar se minimizado
         if self.Minimized then return end
         
         local delta = input.Position - dragStart
@@ -802,7 +796,6 @@ function Window:SetupDragging()
             startPos.Y.Offset + delta.Y
         )
         
-        -- Limitar à tela
         local viewportSize = workspace.CurrentCamera.ViewportSize
         local frameSize = self.MainFrame.AbsoluteSize
         
@@ -869,7 +862,6 @@ function Window:SetupDragging()
 end
 
 function Window:RemoveDragging()
-    -- Remover conexões de arraste
     local toRemove = {}
     for i, conn in ipairs(self.Connections) do
         if conn.Name and (conn.Name:find("Drag") or conn.Name:find("Touch")) then
@@ -878,14 +870,12 @@ function Window:RemoveDragging()
         end
     end
     
-    -- Remover em ordem reversa
     for i = #toRemove, 1, -1 do
         table.remove(self.Connections, toRemove[i])
     end
 end
 
 function Window:SetupButtonEffects()
-    -- Efeitos do botão de configurações
     if self.ConfigButton then
         self.ConfigButton.MouseEnter:Connect(function()
             Tween(self.ConfigButton, {
@@ -907,7 +897,6 @@ function Window:SetupButtonEffects()
         end)
     end
     
-    -- Efeitos do botão minimizar
     self.MinimizeButton.MouseEnter:Connect(function()
         Tween(self.MinimizeButton, {
             BackgroundColor3 = GhostlyBush.Themes[self.Theme].Hover,
@@ -936,7 +925,6 @@ function Window:SetupButtonEffects()
         }, 0.1)
     end)
     
-    -- Efeitos do botão fechar
     self.CloseButton.MouseEnter:Connect(function()
         Tween(self.CloseButton, {
             BackgroundColor3 = Color3.fromRGB(255, 80, 80),
@@ -967,17 +955,14 @@ function Window:SetupButtonEffects()
 end
 
 function Window:SetupButtonEvents()
-    -- Botão minimizar
     self.MinimizeButton.MouseButton1Click:Connect(function()
         self:Minimize()
     end)
     
-    -- Botão fechar
     self.CloseButton.MouseButton1Click:Connect(function()
         self:Destroy()
     end)
     
-    -- Tecla de fechar
     local closeConnection = UserInputService.InputBegan:Connect(function(input, processed)
         if not processed and input.KeyCode == self.CustomConfig.CloseKey then
             self:Destroy()
@@ -995,7 +980,6 @@ function Window:CreateTab(options)
         Elements = {}
     }
     
-    -- Botão da aba
     local tabButton = Create("TextButton", {
         Name = tab.Name .. "TabButton",
         Size = UDim2.new(1, 0, 0, 45),
@@ -1006,7 +990,6 @@ function Window:CreateTab(options)
         Parent = self.TabContainer
     })
     
-    -- Ícone da aba
     local tabIcon = Create("ImageLabel", {
         Name = "Icon",
         Size = UDim2.new(0, 22, 0, 22),
@@ -1018,7 +1001,6 @@ function Window:CreateTab(options)
         Parent = tabButton
     })
     
-    -- Título da aba
     local tabLabel = Create("TextLabel", {
         Name = "Label",
         Size = UDim2.new(1, -50, 1, 0),
@@ -1032,7 +1014,6 @@ function Window:CreateTab(options)
         Parent = tabButton
     })
     
-    -- Indicador de aba ativa
     local activeIndicator = Create("Frame", {
         Name = "ActiveIndicator",
         Size = UDim2.new(0, 3, 0.6, 0),
@@ -1053,7 +1034,6 @@ function Window:CreateTab(options)
         Parent = tabButton
     })
     
-    -- Efeitos hover do botão
     tabButton.MouseEnter:Connect(function()
         if not tabButton.Active then
             Tween(tabButton, {BackgroundColor3 = GhostlyBush.Themes[self.Theme].Hover}, 0.15)
@@ -1070,7 +1050,6 @@ function Window:CreateTab(options)
         end
     end)
     
-    -- Frame do conteúdo da aba
     local tabContent = Create("ScrollingFrame", {
         Name = tab.Name .. "Content",
         Size = UDim2.new(1, 0, 1, 0),
@@ -1100,7 +1079,6 @@ function Window:CreateTab(options)
         tabContent.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 30)
     end)
     
-    -- Selecionar aba ao clicar
     tabButton.MouseButton1Click:Connect(function()
         self:SelectTab(tab.Name)
     end)
@@ -1109,7 +1087,6 @@ function Window:CreateTab(options)
     tab.Content = tabContent
     tab.ActiveIndicator = activeIndicator
     
-    -- Métodos da aba CORRIGIDOS
     function tab:CreateSection(options)
         local section = {
             Name = options.Name or "Section",
@@ -1187,7 +1164,6 @@ function Window:CreateTab(options)
             end
         end)
         
-        -- Botão de colapso
         if section.Collapsible then
             local collapseButton = Create("TextButton", {
                 Name = "CollapseButton",
@@ -1220,7 +1196,6 @@ function Window:CreateTab(options)
                 end
             end)
             
-            -- Efeitos do botão de colapso
             collapseButton.MouseEnter:Connect(function()
                 Tween(collapseButton, {
                     BackgroundColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Hover,
@@ -1318,7 +1293,6 @@ function Window:CreateTab(options)
             Parent = buttonFrame
         })
         
-        -- Efeitos hover
         buttonFrame.MouseEnter:Connect(function()
             Tween(buttonFrame, {
                 BackgroundColor3 = GhostlyBush.Themes[GhostlyBush.CurrentTheme].Hover,
@@ -1432,7 +1406,6 @@ function Window:CreateTab(options)
         return toggle
     end
     
-    -- Selecionar primeira aba automaticamente
     if #self.Tabs == 0 then
         self:SelectTab(tab.Name)
     end
@@ -1444,7 +1417,6 @@ end
 function Window:SelectTab(tabName)
     for _, tab in ipairs(self.Tabs) do
         if tab.Name == tabName then
-            -- Ativar esta aba
             tab.Content.Visible = true
             tab.Button.Active = true
             tab.ActiveIndicator.Visible = true
@@ -1461,7 +1433,6 @@ function Window:SelectTab(tabName)
                 ImageColor3 = GhostlyBush.Themes[self.Theme].Text
             }, 0.15)
         else
-            -- Desativar outras abas
             tab.Content.Visible = false
             tab.Button.Active = false
             tab.ActiveIndicator.Visible = false
@@ -1485,23 +1456,19 @@ function Window:Minimize()
     self.Minimized = not self.Minimized
     
     if self.Minimized then
-        -- Salvar tamanho original
         self.OriginalSize = self.MainFrame.Size
         
-        -- Minimizar: mostrar apenas a barra superior
         Tween(self.MainFrame, {
             Size = UDim2.new(self.MainFrame.Size.X.Scale, self.MainFrame.Size.X.Offset, 0, 45)
         }, 0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
         
         self.MinimizeButton.Text = "+"
         
-        -- Esconder menu de configurações se aberto
         if self.ConfigMenu and self.ConfigMenu.Visible then
             self.ConfigMenu.Visible = false
             self.ConfigOpen = false
         end
     else
-        -- Restaurar tamanho original
         Tween(self.MainFrame, {
             Size = self.OriginalSize or self.Size
         }, 0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -1511,19 +1478,16 @@ function Window:Minimize()
 end
 
 function Window:Destroy()
-    -- Fechar todas as conexões
     for _, connection in ipairs(self.Connections) do
         if typeof(connection) == "RBXScriptConnection" then
             connection:Disconnect()
         end
     end
     
-    -- Destruir a GUI
     if self.ScreenGui then
         self.ScreenGui:Destroy()
     end
     
-    -- Remover da lista de janelas
     for i, window in ipairs(GhostlyBush.Windows) do
         if window == self then
             table.remove(GhostlyBush.Windows, i)
