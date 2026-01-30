@@ -85,16 +85,6 @@ local Window = Library:MakeWindow({
     ScriptFolder = "OmniBox"
 })
 
-local Minimizer = Window:NewMinimizer({
-    KeyCode = Enum.KeyCode.LeftControl
-})
-
-local MobileButton = Minimizer:CreateMobileMinimizer({
-    Image = "rbxassetid://17775975336",
-    BackgroundColor3 = Color3.fromRGB(242, 243, 243),
-    BackgroundTransparency = 1
-})
-
 Window:Notify({
     Title = T("warning_title"),
     Content = T("warning_content"),
