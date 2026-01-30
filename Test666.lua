@@ -105,23 +105,23 @@ Window:Notify({
 })
 
 local MainTab = Window:MakeTab({
-    "Main",
-    "Home"
+    T("main_tab"),
+    T("home_tab")
 })
 
 local AliensTab = Window:MakeTab({
-    "Aliens",
-    "Flame"
+    T("aliens_tab"),
+    T("aliens_tab")
 })
 
 local TeleportsTab = Window:MakeTab({
-    "Teleports",
-    "MapPin"
+    T("teleports_tab"),
+    T("teleports_tab")
 })
 
 local ConfigTab = Window:MakeTab({
-    "Config",
-    "Settings"
+    T("config_tab"),
+    T("config_tab")
 })
 
 local executor = T("not_identified")
