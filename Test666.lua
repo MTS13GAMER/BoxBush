@@ -1,13 +1,11 @@
 local GameId = 131073412590872
 local player = game.Players.LocalPlayer
 
--- Verificação do jogo
 if game.PlaceId ~= GameId then
     player:Kick("pls join Omini-X Definitive")
     return
 end
 
--- Configuração de idiomas
 local Config = {
     Language = "pt",
     Languages = {}
@@ -25,7 +23,6 @@ local function T(key)
     return key
 end
 
--- Idioma Português
 AddLanguage("pt", {
     title = "Box Omini : Omini-X Definitive",
     subtitle = "Por MTS13GAMER",
@@ -34,16 +31,18 @@ AddLanguage("pt", {
     main_tab = "Main",
     home_tab = "Início",
     aliens_tab = "Aliens",
+    teleports_tab = "Teleportes",
     discord_title = "ミ★ BoxBush ★ 彡",
     discord_desc = "Participe da nossa comunidade no Discord!",
     info_section = "informações...",
     executor = "Executor",
     not_identified = "Executor não identificado",
     select_alien = "Selecionar Alien",
-    select_option = "Selecione"
+    select_option = "Selecione",
+    tp_raid1 = "TPS Raid 1",
+    tp_omnitrix = "Omnitrix"
 })
 
--- Idioma Inglês
 AddLanguage("en", {
     title = "Box Omini : Omini-X Definitive",
     subtitle = "By MTS13GAMER",
@@ -52,31 +51,30 @@ AddLanguage("en", {
     main_tab = "Main",
     home_tab = "Home",
     aliens_tab = "Aliens",
+    teleports_tab = "Teleports",
     discord_title = "ミ★ BoxBush ★ 彡",
     discord_desc = "Join our Discord community!",
     info_section = "info...",
     executor = "Executor",
     not_identified = "Executor not identified",
     select_alien = "Select Alien",
-    select_option = "Select"
+    select_option = "Select",
+    tp_raid1 = "TPS Raid 1",
+    tp_omnitrix = "Omnitrix"
 })
 
--- Carregar biblioteca
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/tlredz/Library/refs/heads/main/redz-V5-remake/main.luau"))()
 
--- Criar janela
 local Window = Library:MakeWindow({
     Title = T("title"),
     SubTitle = T("subtitle"),
     ScriptFolder = "OmniBox"
 })
 
--- Minimizador
 Window:NewMinimizer({
     KeyCode = Enum.KeyCode.RightControl
 })
 
--- Notificação inicial
 Window:Notify({
     Title = T("warning_title"),
     Content = T("warning_content"),
@@ -84,19 +82,21 @@ Window:Notify({
     Duration = 6
 })
 
--- Criar aba principal (Main)
 local MainTab = Window:MakeTab({
     T("main_tab"),
     T("home_tab")
 })
 
--- Criar aba de Aliens
 local AliensTab = Window:MakeTab({
     T("aliens_tab"),
     T("aliens_tab")
 })
 
--- Identificar executor
+local TeleportsTab = Window:MakeTab({
+    T("teleports_tab"),
+    T("teleports_tab")
+})
+
 local executor = T("not_identified")
 pcall(function()
     if identifyexecutor then
@@ -106,7 +106,6 @@ pcall(function()
     end
 end)
 
--- Convite Discord (Main Tab)
 MainTab:AddDiscordInvite({
     Title = T("discord_title"),
     Description = T("discord_desc"),
@@ -115,18 +114,15 @@ MainTab:AddDiscordInvite({
     Invite = "https://discord.gg/kdeBBmWeGt"
 })
 
--- Seção de informações (Main Tab)
 MainTab:AddSection(T("info_section"))
 MainTab:AddParagraph(T("executor"), executor)
 
--- Dropdown de seleção de alien (Aliens Tab)
 AliensTab:AddDropdown({
     Name = T("select_alien"),
     MultiSelect = false,
-    Options = {T("select_option"), "HeatBlast", "Wildmutt", "Diamond"},
+    Options = {T("select_option"), "HeatBlast", "Wildmutt", "Diamond", "XLR8", "Upgrade", "GreyMatter"},
     Default = T("select_option"),
     Callback = function(Value)
-        -- Não faz nada se for a opção "Selecione/Select"
         if Value == T("select_option") then
             return
         end
@@ -138,5 +134,25 @@ AliensTab:AddDropdown({
             :WaitForChild("Morph")
             :WaitForChild("AlienMorph")
             :InvokeServer(alien, 0.3)
+    end
+})
+
+TeleportsTab:AddButton({
+    Name = T("tp_raid1"),
+    Callback = function()
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            character.HumanoidRootPart.CFrame = CFrame.new(-650.8, 7.1, -3318.2)
+        end
+    end
+})
+
+TeleportsTab:AddButton({
+    Name = T("tp_omnitrix"),
+    Callback = function()
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            character.HumanoidRootPart.CFrame = CFrame.new(-360.3, -46.4, -4329.0)
+        end
     end
 })
