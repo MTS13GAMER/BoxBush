@@ -38,6 +38,7 @@ AddLanguage("pt", {
     info_section = "Informações",
     aliens_section = "Transformações",
     teleports_section = "Locais",
+    destransform_section = "Destransformar",
     config_section = "Idioma",
     executor = "Executor",
     not_identified = "Executor não identificado",
@@ -46,6 +47,7 @@ AddLanguage("pt", {
     select_language = "Selecionar Idioma",
     tp_raid1 = "Raid 1",
     tp_omnitrix = "Omnitrix",
+    destransform_button = "Destransformar",
     portuguese = "Português",
     english = "English"
 })
@@ -65,6 +67,7 @@ AddLanguage("en", {
     info_section = "Information",
     aliens_section = "Transformations",
     teleports_section = "Locations",
+    destransform_section = "Detransform",
     config_section = "Language",
     executor = "Executor",
     not_identified = "Executor not identified",
@@ -73,6 +76,7 @@ AddLanguage("en", {
     select_language = "Select Language",
     tp_raid1 = "Raid 1",
     tp_omnitrix = "Omnitrix",
+    destransform_button = "Detransform",
     portuguese = "Português",
     english = "English"
 })
@@ -83,6 +87,16 @@ local Window = Library:MakeWindow({
     Title = T("title"),
     SubTitle = T("subtitle"),
     ScriptFolder = "OmniBox"
+})
+
+local Minimizer = Window:NewMinimizer({
+    KeyCode = Enum.KeyCode.LeftControl
+})
+
+local MobileButton = Minimizer:CreateMobileMinimizer({
+    Image = "rbxassetid://17775975336",
+    BackgroundColor3 = Color3.fromRGB(242, 243, 243),
+    BackgroundTransparency = 1
 })
 
 Window:Notify({
@@ -167,6 +181,20 @@ AliensTab:AddDropdown({
     end
 })
 
+AliensTab:AddSection(T("destransform_section"))
+
+AliensTab:AddButton({
+    Name = T("destransform_button"),
+    Callback = function()
+        game:GetService("ReplicatedStorage")
+            :WaitForChild("RemoteFunctions")
+            :WaitForChild("Character")
+            :WaitForChild("Morph")
+            :WaitForChild("AlienUnMorph")
+            :InvokeServer()
+    end
+})
+
 local noclipConnection
 
 local function EnableNoclip()
@@ -212,25 +240,36 @@ local function TeleportTo(position)
         humanoid.PlatformStand = true
     end
     
-    EnableNoclip()
-    
     local bodyVelocity = Instance.new("BodyVelocity")
     bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
     bodyVelocity.Parent = humanoidRootPart
     
-    local targetPosition = position + Vector3.new(0, 10, 0)
+    local targetPosition = position + Vector3.new(0, 15, 0)
+    local startTime = tick()
+    
+    task.delay(3, function()
+        EnableNoclip()
+    end)
     
     local connection
     connection = game:GetService("RunService").Heartbeat:Connect(function()
         local distance = (targetPosition - humanoidRootPart.Position).Magnitude
         
-        if distance < 5 then
-            bodyVelocity:Destroy()
-            if humanoid then
-                humanoid.PlatformStand = false
+        if distance < 10 then
+            local descendPosition = position + Vector3.new(0, 2, 0)
+            local descendDistance = (descendPosition - humanoidRootPart.Position).Magnitude
+            
+            if descendDistance < 3 then
+                bodyVelocity:Destroy()
+                if humanoid then
+                    humanoid.PlatformStand = false
+                end
+                DisableNoclip()
+                connection:Disconnect()
+            else
+                local direction = (descendPosition - humanoidRootPart.Position).Unit
+                bodyVelocity.Velocity = direction * 50
             end
-            DisableNoclip()
-            connection:Disconnect()
         else
             local direction = (targetPosition - humanoidRootPart.Position).Unit
             bodyVelocity.Velocity = direction * 135
