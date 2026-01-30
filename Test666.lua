@@ -39,7 +39,7 @@ AddLanguage("pt", {
     not_identified = "Executor não identificado",
     select_alien = "Selecionar Alien",
     select_option = "Selecione",
-    tp_raid1 = "TPS Raid 1",
+    tp_raid1 = "Raid 1",
     tp_omnitrix = "Omnitrix"
 })
 
@@ -59,7 +59,7 @@ AddLanguage("en", {
     not_identified = "Executor not identified",
     select_alien = "Select Alien",
     select_option = "Select",
-    tp_raid1 = "TPS Raid 1",
+    tp_raid1 = "Raid 1",
     tp_omnitrix = "Omnitrix"
 })
 
@@ -71,8 +71,14 @@ local Window = Library:MakeWindow({
     ScriptFolder = "OmniBox"
 })
 
-Window:NewMinimizer({
-    KeyCode = Enum.KeyCode.RightControl
+local Minimizer = Window:NewMinimizer({
+    KeyCode = Enum.KeyCode.LeftControl
+})
+
+local MobileButton = Minimizer:CreateMobileMinimizer({
+    Image = "rbxassetid://17775975336",
+    BackgroundColor3 = Color3.fromRGB(242, 243, 243),
+    BackgroundTransparency = 1
 })
 
 Window:Notify({
@@ -84,17 +90,20 @@ Window:Notify({
 
 local MainTab = Window:MakeTab({
     T("main_tab"),
-    T("home_tab")
+    T("home_tab"),
+    "rbxassetid://17775975336"
 })
 
 local AliensTab = Window:MakeTab({
     T("aliens_tab"),
-    T("aliens_tab")
+    T("aliens_tab"),
+    "rbxassetid://10723407389"
 })
 
 local TeleportsTab = Window:MakeTab({
     T("teleports_tab"),
-    T("teleports_tab")
+    T("teleports_tab"),
+    "rbxassetid://7733674079"
 })
 
 local executor = T("not_identified")
@@ -120,7 +129,19 @@ MainTab:AddParagraph(T("executor"), executor)
 AliensTab:AddDropdown({
     Name = T("select_alien"),
     MultiSelect = false,
-    Options = {T("select_option"), "HeatBlast", "Wildmutt", "Diamond", "XLR8", "Upgrade", "GreyMatter"},
+    Options = {
+        T("select_option"),
+        "HeatBlast",
+        "Wildmutt",
+        "Diamond",
+        "XLR8",
+        "Upgrade",
+        "FourArms",
+        "GreyMatter",
+        "Ripjaws",
+        "Stinkfly",
+        "Ghostfreak"
+    },
     Default = T("select_option"),
     Callback = function(Value)
         if Value == T("select_option") then
@@ -137,22 +158,49 @@ AliensTab:AddDropdown({
     end
 })
 
+local function TeleportTo(position)
+    local character = player.Character
+    if not character then return end
+    
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return end
+    
+    local humanoid = character:FindFirstChild("Humanoid")
+    if humanoid then
+        humanoid.PlatformStand = true
+    end
+    
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
+    bodyVelocity.Parent = humanoidRootPart
+    
+    local connection
+    connection = game:GetService("RunService").Heartbeat:Connect(function()
+        local distance = (position - humanoidRootPart.Position).Magnitude
+        
+        if distance < 5 then
+            bodyVelocity:Destroy()
+            if humanoid then
+                humanoid.PlatformStand = false
+            end
+            connection:Disconnect()
+        else
+            local direction = (position - humanoidRootPart.Position).Unit
+            bodyVelocity.Velocity = direction * 90
+        end
+    end)
+end
+
 TeleportsTab:AddButton({
     Name = T("tp_raid1"),
     Callback = function()
-        local character = player.Character
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            character.HumanoidRootPart.CFrame = CFrame.new(-650.8, 7.1, -3318.2)
-        end
+        TeleportTo(Vector3.new(-650.8, 7.1, -3318.2))
     end
 })
 
 TeleportsTab:AddButton({
     Name = T("tp_omnitrix"),
     Callback = function()
-        local character = player.Character
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            character.HumanoidRootPart.CFrame = CFrame.new(-360.3, -46.4, -4329.0)
-        end
+        TeleportTo(Vector3.new(-360.3, -46.4, -4329.0))
     end
 })
