@@ -79,8 +79,6 @@ AddLanguage("en", {
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/tlredz/Library/refs/heads/main/redz-V5-remake/main.luau"))()
 
-Library:SetUIScale(0.8)
-
 local Window = Library:MakeWindow({
     Title = T("title"),
     SubTitle = T("subtitle"),
